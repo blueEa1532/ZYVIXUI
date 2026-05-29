@@ -1,5 +1,5 @@
 --[[
-v1.0.0
+v1.0.1
 _______________.___.____   ____._______  ___
 \____    /\__  |   |\   \ /   /|   \   \/  /
   /     /  /   |   | \   Y   / |   |\     / 
@@ -2588,6 +2588,8 @@ ZYVIX:InjectElement("Keybind", function(parent, setting)
 	
 	return keybind_obj
 end)
+
+main_genv._ZYVIX = ZYVIX
 
 return ZYVIX
 
