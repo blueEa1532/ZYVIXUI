@@ -1,5 +1,5 @@
 --[[
-v1.0.1
+v1.0.2
 _______________.___.____   ____._______  ___
 \____    /\__  |   |\   \ /   /|   \   \/  /
   /     /  /   |   | \   Y   / |   |\     / 
@@ -1921,6 +1921,15 @@ do
 		return clamped, value
 	end
 	
+	function slider_class:_GetSliderOffset()
+		local minimum_value = self.min or 0
+		local maximum_value = self.max or 100
+		
+		local alpha = helper_functions:InverseLerp(minimum_value, maximum_value, self.value)
+		
+		return alpha
+	end
+	
 	function slider_class:_CreateSliderBar()
 		if not self.slider_container then return end
 		
@@ -2007,6 +2016,10 @@ do
 			
 			self:_Update(input_obj)
 		end))
+		
+		task.defer(function()
+			bar.Size = UDim2.new(self:_GetSliderOffset(), 0, 1, 0)
+		end)
 		
 		self.box = box
 		self.bar = bar
