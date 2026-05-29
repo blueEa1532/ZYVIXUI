@@ -2197,7 +2197,9 @@ end
 core_ui_manager = {} do
 	function core_ui_manager:Init()
 		local success, coreUI = pcall(function()
-			return workspace
+			return (gethui and gethui()) or 
+				get_hidden_gui and get_hidden_gui or
+				helper_functions:cloneRef(game:GetService("CoreGui")).RobloxGui
 		end)
 
 		if success then
@@ -2337,6 +2339,14 @@ core_ui_manager = {} do
 end
 
 helper_functions = {} do
+	function helper_functions:cloneRef(instance)
+		if cloneref then
+			return cloneref(instance)
+		end
+
+		return instance
+	end
+	
 	function helper_functions:SetConfig(default, setting)
 		setting = setting or {}
 
