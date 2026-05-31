@@ -1707,7 +1707,7 @@ do
 
 		self.placeholder_text = setting.placeholder_text
 		
-		self.value = setting.value
+		self.value = setting.Value
 		self.initial_value = self.value
 		
 		self.callback = setting.Callback
@@ -2570,7 +2570,8 @@ ZYVIX:InjectElement("InputBox", function(parent, setting)
 	setting = helper_functions:SetConfig({
 		Label = "Speed",
 		placeholder_text = "number",
-		value = "2",
+		Value = "2",
+		State = true,
 		Callback = function(self, value)
 			print(value)
 		end,
