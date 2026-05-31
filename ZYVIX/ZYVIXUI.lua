@@ -20,16 +20,18 @@ THE STRUCTURE DESIGN OF THIS UI LIB IS SIMILAR BUT NOT SKIDDED FROM (regui). IT 
 "It is never too late to be what you might have been." - George Eliot
 ]]
 
+if not game:IsLoaded() then game.Loaded:Wait() end
+
 local proxy
 
 proxy = setmetatable({}, {
 	__index = function(self, service_name: string)
 		local service = game:GetService(service_name)
-		
+
 		if cloneref then
 			return cloneref(service)
 		end
-		
+
 		return service
 	end,
 })
@@ -38,6 +40,7 @@ local tween_service = proxy.TweenService
 local run_service = proxy.RunService
 local content_provider = proxy.ContentProvider
 local userinput_service = proxy.UserInputService
+local players = proxy.Players
 
 
 local main_genv = getgenv and getgenv() or _G
@@ -143,7 +146,7 @@ do
 	function main_window_class:_Destroy()
 		if not self or self.Destroyed then return end
 		self.Destroyed = true
-		
+
 		for _, tween in ipairs(self.stored_tween) do
 			pcall(function()
 				tween:Cancel()
@@ -182,13 +185,13 @@ do
 				break
 			end
 		end)
-		
+
 		return target_tween
 	end
 
 	function main_window_class:_CreateWindowBase(parent, setting)
 		if self.window_base then return end
-		
+
 		local pos = setting.Position
 		local size = setting.Size
 
@@ -203,8 +206,8 @@ do
 		window_frame.AnchorPoint = Vector2.new(0.5, 0)
 		window_frame.Position = pos
 		window_frame.Size = size
-		
-		
+
+
 
 		local UI_padding = Instance.new("UIPadding")
 		UI_padding.Parent = window_frame
@@ -383,31 +386,31 @@ do
 		icon.Size = UDim2.new(0.054, 0, 0.982, 0)
 		icon.ZIndex = 2
 		icon.Image = tostring(setting.icon_id)
-		
+
 		local dragging, drag_input, input_pos, start_pos
-		
+
 		self:_StoreConn(drag_bar.InputBegan:Connect(function(input)
 			if input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
-			
+
 			dragging = true
 			input_pos = input.Position
 			start_pos = self.window_base.Position
 		end))
-		
+
 		self:_StoreConn(drag_bar.InputEnded:Connect(function(input)
 			if input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
-			
+
 			dragging = nil
 		end))
-		
+
 		self:_StoreConn(userinput_service.InputChanged:Connect(function(input)
 			if not dragging then return end
 			if input.UserInputType ~= Enum.UserInputType.MouseMovement and input.UserInputType ~= Enum.UserInputType.Touch then
 				return
 			end
-			
+
 			local delta = input.Position - input_pos
-			
+
 			self.window_base.Position = UDim2.new(
 				start_pos.X.Scale, 
 				start_pos.X.Offset + delta.X,
@@ -429,24 +432,24 @@ do
 		local collapse_tween = self:_AddTween(self.window_content, universal_tween, {Size = UDim2.new(1, 0, 0, 0)})
 		collapse_tween:Play()
 		collapse_tween.Completed:Wait()
-		
+
 		self.window_content.Visible = false
 		self.collapsed = true
 	end
-	
+
 	function main_window_class:Expand()
 		if not self.collapsed then return end
 		if not self.window_content then return end
-		
+
 		self.window_content.Visible = true
 
 		local collapse_tween = self:_AddTween(self.window_content, universal_tween, {Size = UDim2.new(1, 0, 0.9, 0)})
 		collapse_tween:Play()
 		collapse_tween.Completed:Wait()
-		
+
 		self.collapsed = false
 	end
-	
+
 	function main_window_class:ToggleCollapse()
 		if self.collapsed then
 			self:Expand()
@@ -555,7 +558,7 @@ do
 	function tab_creator_class:GetBase()
 		return self.content_container
 	end
-	
+
 	function tab_creator_class:Callback(callback)
 		self.callback = callback
 		return self
@@ -669,7 +672,7 @@ do
 
 		self.tab = tab_container
 	end
-	
+
 	function tab_creator_class:_CreateComponentContent(parent)
 		local content_container = Instance.new("Frame")
 		content_container.Parent = parent
@@ -727,7 +730,7 @@ do
 
 
 		local current_index = #self.tabs	
-		
+
 		if not self.active_tab_index then
 			self:_SetActiveTab(current_index)
 		end
@@ -742,21 +745,21 @@ do
 	function tab_list_class:_SetActiveTab(index)
 		local selected_tab = self.tabs[index]
 		if not selected_tab then warn("err") return end
-		
+
 		if self.active_tab_index and self.active_tab_index ~= index then
 			local active_tab = self.tabs[self.active_tab_index]
 			active_tab.active_boolean = false
-			
+
 			local active_content = active_tab.tab
-			
+
 			tween_service:Create(active_content, TweenInfo.new(
 				0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-				BackgroundTransparency = 0.8
+					BackgroundTransparency = 0.8
 				}):Play()
-			
+
 			active_tab.content_container.Visible = false
 		end
-		
+
 		selected_tab.active_boolean = true
 		selected_tab.content_container.Visible = true
 		local content = selected_tab.tab
@@ -764,7 +767,7 @@ do
 		tween_service:Create(content, universal_tween, {
 			BackgroundTransparency = 0.2
 		}):Play()
-		
+
 		self.active_tab_index = index
 	end
 
@@ -855,7 +858,7 @@ do
 		self.tab_list = scrolling_frame
 		self.top_section = top_section
 	end
-	
+
 	function tab_list_class:_InitContent(parent)
 		if self.component_container then return end
 		local component_container = Instance.new("Frame")
@@ -878,7 +881,7 @@ section_class.__index = section_class
 setmetatable(section_class, { __index = container_base })
 
 do
-	
+
 			--[[
 		todo: 
 		 when creating a tab, it'll create a page for that tab. function in tab_list_class
@@ -887,14 +890,14 @@ do
 		set up coreui function for the section creator 
 		inject element
 		]]
-			
+
 	function section_class:GetBase()
 		return self.section_frame
 	end
-			
+
 	function section_class:_CreateScrollingCanvas(parent, setting)
 		if self.scrolling_content then return end
-		
+
 		local scrolling_frame = Instance.new("ScrollingFrame")
 		scrolling_frame.Parent = parent
 		scrolling_frame.Active = true
@@ -910,14 +913,14 @@ do
 		scrolling_frame.AutomaticSize = Enum.AutomaticSize.Y
 		scrolling_frame.AutomaticCanvasSize = Enum.AutomaticSize.Y
 		scrolling_frame.CanvasSize = UDim2.new(0,0,0,0)
-		
+
 		self.scrolling_frame = scrolling_frame
 	end
-	
+
 	function section_class:_CreateSection(setting)
 		if self.section_frame then return end
 		if not self.scrolling_frame then return end
-		
+
 		local section_container = Instance.new("Frame")
 		section_container.Name = "section"
 		section_container.Parent = self.scrolling_frame
@@ -928,27 +931,27 @@ do
 		section_container.Position = UDim2.new(0, 0, 0, 0)
 		section_container.Size = UDim2.new(1, 0, 0.345, 0)
 		section_container.AutomaticSize = Enum.AutomaticSize.Y
-		
+
 		local list_layout = Instance.new("UIListLayout")
 		list_layout.Parent = section_container
 		list_layout.SortOrder = Enum.SortOrder.LayoutOrder
 		list_layout.Padding = UDim.new(0, 8)
-		
+
 		local padding = Instance.new("UIPadding")
 		padding.Parent = section_container
 		padding.PaddingBottom = UDim.new(0, 8)
 		padding.PaddingLeft = UDim.new(0, 8)
 		padding.PaddingRight = UDim.new(0, 8)
 		padding.PaddingTop = UDim.new(0, 8)
-		
+
 		local corner_radius = Instance.new("UICorner")
 		corner_radius.Parent = section_container
-		
+
 		local gradient = Instance.new("UIGradient")
 		gradient.Parent = section_container
 		gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(16, 24, 40)), ColorSequenceKeypoint.new(0.49, Color3.fromRGB(0, 0, 0)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(16, 24, 40))}
 		gradient.Rotation = 90
-		
+
 		self.section_frame = section_container
 	end
 end
@@ -1025,8 +1028,8 @@ do
 		label.Font = Enum.Font.MontserratMedium
 		label.TextStrokeTransparency = 0.75
 		label.TextXAlignment = Enum.TextXAlignment.Left
-		
-		
+
+
 		local text_size_ratio = Instance.new("UITextSizeConstraint")
 		text_size_ratio.Parent = label
 		text_size_ratio.MinTextSize = 1
@@ -1068,12 +1071,12 @@ do
 
 		self:_StoreConn(button.MouseButton1Click:Connect(function()
 			if not self.button then return end
-			
+
 			if setting.Callback then
 				setting.Callback()
 			end
 		end))
-		
+
 
 		self.button = button
 	end
@@ -1110,12 +1113,18 @@ do
 		self:_SetValue(boolean)
 		return self
 	end
-	
+
 	function checkbox_class:Toggle()
 		self:_SetValue(not self.value)
 		return self
 	end
 	
+	function checkbox_class:SetState(boolean)
+		self:_ChangeState(boolean)
+		print(boolean)
+		return self
+	end
+
 	function checkbox_class:_StoreConn(conn)
 		return helper_functions:_StoreConn(self.stored_conn, conn)
 	end
@@ -1140,52 +1149,70 @@ do
 		self.checkbox_tick = nil
 		self.checkbox_container = nil
 	end
-	
+
+	function checkbox_class:_ChangeState(value)
+		if not self.btn_frame then return end
+		if not self.checkbox_container then return end
+		
+		self.state = value
+		self.checkbox_container.BackgroundTransparency = not self.state and 0.500 or 1.000
+
+		if self.callback then
+			self:callback(false)
+		end
+		
+		self:_SetValue(false)
+	end
+
 	function checkbox_class:_SetValue(value)
 		if self.value == value then return end
 		if not self.checkbox_tick then return end
 		local target_transparency = (value == true and 0 or 1)
-		
+
 		tween_service:Create(self.checkbox_tick, universal_tween, {BackgroundTransparency = target_transparency}):Play()
-		
+
 		if self.callback then
 			self:callback(value)
 		end
-		
+
 		self.value = value
 	end
-	
+
 	function checkbox_class:_CreateCheckBoxContainer(parent, setting)
 		if self.checkbox_container then return end
 		self.value = setting.Value
+		self.state = setting.State
 		self.callback = setting.Callback
-		
+
 		local check_box_container = Instance.new("Frame")
 		check_box_container.Parent = parent
 		check_box_container.Name = "Checkbox"
 		check_box_container.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-		check_box_container.BackgroundTransparency = 1.000
+		check_box_container.BackgroundTransparency = not self.state and 0.500 or 1.000
 		check_box_container.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		check_box_container.BorderSizePixel = 0
+		check_box_container.AutomaticSize = Enum.AutomaticSize.X
 		check_box_container.Size = UDim2.new(1, 0, 0, 20)
-		
+		check_box_container.ZIndex = 2
+
 		check_box_container.Destroying:Connect(function()
 			self:_Destroy()
 		end)
-		
+
 		local list_layout = Instance.new("UIListLayout")
 		list_layout.Parent = check_box_container
 		list_layout.FillDirection = Enum.FillDirection.Horizontal
 		list_layout.SortOrder = Enum.SortOrder.LayoutOrder
 		list_layout.VerticalAlignment = Enum.VerticalAlignment.Center
 		list_layout.Padding = UDim.new(0, 7)
-		
+
 		local corner_radius = Instance.new("UICorner")
+		corner_radius.CornerRadius = UDim.new(0, 2)
 		corner_radius.Parent = check_box_container
-		
+
 		local gradient = Instance.new("UIGradient")
 		gradient.Parent = check_box_container
-		gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(54, 103, 148)), ColorSequenceKeypoint.new(0.49, Color3.fromRGB(119, 193, 232)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(54, 103, 148))}
+		gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(0, 0, 0)), ColorSequenceKeypoint.new(0.49, Color3.fromRGB(16, 16, 16)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(0, 0, 0))}
 
 		local label = Instance.new("TextLabel")
 		label.Parent = check_box_container
@@ -1194,7 +1221,7 @@ do
 		label.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		label.BorderSizePixel = 0
 		label.LayoutOrder = 1
-		label.Size = UDim2.new(0.899999976, 0, 1, 0)
+		label.Size = UDim2.new(0.9, 0, 1, 0)
 		label.Font = Enum.Font.MontserratMedium
 		label.Text = setting.Label
 		label.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -1207,14 +1234,14 @@ do
 		text_size_ratio.Parent = label
 		text_size_ratio.MinTextSize = 1
 		text_size_ratio.MaxTextSize = 14
-		
+
 		self.checkbox_container = check_box_container
 	end
-	
+
 	function checkbox_class:_CreateCheckboxTick()
 		if self.checkbox_tick then return end
 		if not self.checkbox_container then return end
-		
+
 		local tick_container = Instance.new("Frame")
 		tick_container.Name = "box"
 		tick_container.Parent = self.checkbox_container
@@ -1223,7 +1250,7 @@ do
 		tick_container.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		tick_container.BorderSizePixel = 0
 		tick_container.Size = UDim2.new(0, 20, 0, 20)
-		
+
 		local btn_frame = Instance.new("TextButton")
 		btn_frame.Parent = tick_container
 		btn_frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -1236,17 +1263,17 @@ do
 		btn_frame.Text = ""
 		btn_frame.TextColor3 = Color3.fromRGB(0, 0, 0)
 		btn_frame.TextSize = 14.000
-		
+
 		local gradient = Instance.new("UIGradient")
 		gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(16, 24, 40)), ColorSequenceKeypoint.new(0.49, Color3.fromRGB(0, 0, 0)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(16, 24, 40))}
 		gradient.Parent = tick_container
-		
+
 		local stroke = Instance.new("UIStroke")
 		stroke.Parent = tick_container
 		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 		stroke.Color = Color3.fromRGB(85, 85, 85)
 		stroke.Transparency = 0.5
-		
+
 		local glow = Instance.new("Frame")
 		glow.Parent = tick_container
 		glow.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -1256,22 +1283,23 @@ do
 		glow.BorderSizePixel = 0
 		glow.Position = UDim2.new(0.5, 0, 0.5, 0)
 		glow.Size = UDim2.new(0.75, 0, 0.75, 0)
-		
+
 		local corner_radius = Instance.new("UICorner")
 		corner_radius.CornerRadius = UDim.new(0, 2)
 		corner_radius.Parent = glow
-		
+
 		local secondary_gradient = Instance.new("UIGradient")
 		secondary_gradient.Parent = glow
 		secondary_gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(54, 103, 148)), ColorSequenceKeypoint.new(0.49, Color3.fromRGB(119, 193, 232)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(54, 103, 148))}
 
 		self:_StoreConn(btn_frame.MouseButton1Click:Connect(function()
-			if not self.checkbox_tick then return end
-			
+			if not self.checkbox_tick or not self.state then return end
+
 			self:Toggle()
 		end))
 
 		self.checkbox_tick = glow
+		self.btn_frame = btn_frame
 	end
 end
 
@@ -1313,26 +1341,26 @@ do
 	function dropdown_class:GetItems()
 		return self.items
 	end
-	
+
 	function dropdown_class:SetItem(value)
 		self:_ChangeValue(value)
 		return self
 	end
-	
+
 	function dropdown_class:_StoreConn(conn)
 		return helper_functions:_StoreConn(conn)
 	end
-	
+
 	function dropdown_class:_Clear()
 		if not self.Itemlist then return end
-		
+
 		for _, v in ipairs(self.Itemlist:GetChildren()) do
 			if not v:IsA("TextButton") then continue end
-			
+
 			v:Destroy()
 		end
 	end
-	
+
 	function dropdown_class:_Destroy()
 		if not self or self.Destroyed then return end
 		self.Destroyed = true
@@ -1357,19 +1385,19 @@ do
 		self.Itemlist = nil
 	end
 
-	
+
 	function dropdown_class:Hide()
 		if self.hidden then return end
-		
+
 		tween_service:Create(self.arrow_icon, universal_tween, {Rotation = 0}):Play()
-		
+
 		self.Itemlist.Visible = false
 		self.hidden = true
 	end
-	
+
 	function dropdown_class:Open()
 		if not self.hidden then return end
-		
+
 		self:_RefreshList()
 
 		tween_service:Create(self.arrow_icon, universal_tween, {Rotation = 180}):Play()
@@ -1377,23 +1405,23 @@ do
 		self.Itemlist.Visible = true
 		self.hidden = false
 	end
-	
+
 	function dropdown_class:_ChangeItem(value)
 		if not self.Itemlist_container then return end
-		
+
 		self.Itemlist_container.value.Text = value
 		self.value = value
-		
+
 		if self.callback then
 			self:callback(value)
 		end
 	end
-	
+
 	function dropdown_class:_RefreshList()
 		if not self.Itemlist then return end
-		
+
 		self:_Clear()
-		
+
 		for i, str in ipairs(self.items) do
 			local item_container = Instance.new("TextButton")
 			item_container.Parent = self.Itemlist
@@ -1407,11 +1435,11 @@ do
 			item_container.Text = ""
 			item_container.TextColor3 = Color3.fromRGB(255, 255, 255)
 			item_container.TextSize = 14.000
-			
+
 			local stroke = Instance.new("UIStroke")
 			stroke.Parent = item_container
 			stroke.Color = Color3.fromRGB(0,0,0)
-			
+
 			local icon = Instance.new("ImageLabel")
 			icon.Parent = item_container
 			icon.AnchorPoint = Vector2.new(1, 0)
@@ -1421,10 +1449,10 @@ do
 			icon.Position = UDim2.new(1, 0, 0, 0)
 			icon.Size = UDim2.new(1, 0, 1, 0)
 			icon.Image = self.image_order[i] or "rbxasset://textures/ui/GuiImagePlaceholder.png"
-			
+
 			local ratio = Instance.new("UIAspectRatioConstraint")
 			ratio.Parent = icon
-			
+
 			local item_label = Instance.new("TextLabel")
 			item_label.Name = "ItemLabel"
 			item_label.Parent = item_container
@@ -1444,14 +1472,14 @@ do
 			end))
 		end
 	end
-	
+
 	function dropdown_class:_CreateDropDownContainer(parent, setting)
 		if self.dropdown_container then return end
 		self.callback = setting.Callback
 		self.items = setting["Items"]
 		self.value = type(setting.selected) == "number" and self.items[setting.selected] or setting.selected
 		self.image_order = setting["image"]
-				
+
 		local dropdown_container = Instance.new("Frame")
 		dropdown_container.Parent = parent
 		dropdown_container.Name = "Dropdown"
@@ -1461,11 +1489,11 @@ do
 		dropdown_container.BorderSizePixel = 0
 		dropdown_container.ZIndex = 4
 		dropdown_container.Size = UDim2.new(0.7, 0, 0, 20)
-		
+
 		dropdown_container.Destroying:Once(function()
 			self:_Destroy()
 		end)
-		
+
 		local btn = Instance.new("TextButton")
 		btn.Parent = dropdown_container
 		btn.Name = "btn"
@@ -1479,7 +1507,7 @@ do
 		btn.Text = ""
 		btn.TextColor3 = Color3.fromRGB(0, 0, 0)
 		btn.TextSize = 14.000
-		
+
 		local label = Instance.new("TextLabel")
 		label.Parent = dropdown_container
 		label.Name = "Label"
@@ -1494,30 +1522,30 @@ do
 		label.TextColor3 = Color3.fromRGB(255, 255, 255)
 		label.TextSize = 14.000
 		label.TextXAlignment = Enum.TextXAlignment.Left
-		
+
 		local text_size_ratio = Instance.new("UITextSizeConstraint")
 		text_size_ratio.Parent = label
 		text_size_ratio.MinTextSize = 1
 		text_size_ratio.MaxTextSize = 14
-		
+
 		self:_StoreConn(btn.MouseButton1Click:Connect(function()
 			if not self.Itemlist then return end
-			
+
 			if self.hidden then
 				self:Open()
 			else
 				self:Hide()
 			end
 		end))
-		
+
 		self.dropdown_container = dropdown_container
 		self.hidden = true
 	end
-	
+
 	function dropdown_class:_CreateDropdownItemList()
 		if self.Itemlist then return end
 		if not self.dropdown_container then return end
-		
+
 		local itemlist_container = Instance.new("Frame")
 		itemlist_container.Parent = self.dropdown_container
 		itemlist_container.Name = "container"
@@ -1525,7 +1553,7 @@ do
 		itemlist_container.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		itemlist_container.BorderSizePixel = 0
 		itemlist_container.Size = UDim2.new(0.7, 0, 1, 0)
-		
+
 		local gradient = Instance.new("UIGradient")
 		gradient.Parent = itemlist_container
 		gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(10, 14, 24)), ColorSequenceKeypoint.new(0.49, Color3.fromRGB(0, 0, 0)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(10, 14, 24))}
@@ -1533,7 +1561,7 @@ do
 		local corner_radius = Instance.new("UICorner")
 		corner_radius.Parent = itemlist_container
 		corner_radius.CornerRadius = UDim.new(0, 4)
-		
+
 		local arrow_icon = Instance.new("ImageLabel")
 		arrow_icon.Parent = itemlist_container
 		arrow_icon.AnchorPoint = Vector2.new(1, 0)
@@ -1544,10 +1572,10 @@ do
 		arrow_icon.Position = UDim2.new(1, 0, 0, 0)
 		arrow_icon.Size = UDim2.new(1, 0, 1, 0)
 		arrow_icon.Image = "rbxassetid://11552476728"
-		
+
 		local ratio = Instance.new("UIAspectRatioConstraint")
 		ratio.Parent = arrow_icon
-		
+
 		local value = Instance.new("TextLabel")
 		value.Name = "value"
 		value.Parent = itemlist_container
@@ -1562,12 +1590,12 @@ do
 		value.TextScaled = true
 		value.TextSize = 14.000
 		value.TextWrapped = true
-		
+
 		local text_size_ratio = Instance.new("UITextSizeConstraint")
 		text_size_ratio.Parent = value
 		text_size_ratio.MinTextSize = 1
 		text_size_ratio.MaxTextSize = 14
-		
+
 		local item_list = Instance.new("Frame")
 		item_list.Name = "ItemList"
 		item_list.Parent = itemlist_container
@@ -1578,19 +1606,19 @@ do
 		item_list.Visible = false
 		item_list.Position = UDim2.new(0, 0, 0.8, 0)
 		item_list.Size = UDim2.new(1, 0, 0, 0)
-		
-		
+
+
 		corner_radius:Clone().Parent = item_list
 		gradient:Clone().Parent = item_list
-		
+
 		local list_layout = Instance.new("UIListLayout")
 		list_layout.SortOrder = Enum.SortOrder.LayoutOrder
 		list_layout.Parent = item_list
-		
+
 		local padding_2 = Instance.new("UIPadding")
 		padding_2.Parent = item_list
 		padding_2.PaddingTop = UDim.new(0, 10)
-		
+
 		self.arrow_icon = arrow_icon
 		self.Itemlist_container = itemlist_container
 		self.Itemlist = item_list
@@ -1603,7 +1631,7 @@ divider_class.__index = divider_class
 do
 	function divider_class:_CreateDivider(parent)
 		if self.divider then return end
-		
+
 		local divider = Instance.new("Frame")
 		divider.Parent = parent
 		divider.Name = "Divider"
@@ -1612,11 +1640,11 @@ do
 		divider.BorderSizePixel = 0
 		divider.Position = UDim2.new(0, 0, 0.966, 0)
 		divider.Size = UDim2.new(1, 0, 0, 8)
-		
+
 		local corner_radius = Instance.new("UICorner")
 		corner_radius.Parent = divider
 		corner_radius.CornerRadius = UDim.new(1, 0)
-		
+
 		self.divider = divider
 	end
 end
@@ -1625,11 +1653,11 @@ local input_text_class = table.create(8)
 input_text_class.__index = input_text_class
 
 do
-	
+
 	function input_text_class:_StoreConn(conn)
 		return helper_functions:_StoreConn(self.stored_conn, conn)
 	end
-	
+
 	function input_text_class:_Destroy()
 		if not self or self.Destroyed then return end
 		self.Destroyed = true
@@ -1649,27 +1677,27 @@ do
 		self.stored_conn = nil
 		self.input_box_container = nil
 	end
-	
+
 	function input_text_class:SetValue(value)
 		self:_ChangeValue(value)
 		return self
 	end
-	
+
 	function input_text_class:_ChangeValue(value)
 		if not self.inputbox then return end
-		
+
 		self.inputbox.Text = value
 		self.value = value
 	end
-	
+
 	function input_text_class:_CreateInputContainer(parent, setting)
 		if self.input_box_container then return end
-		
+
 		self.placeholder_text = setting.placeholder_text
 		self.value = setting.value
 		self.callback = setting.Callback
 		self.label = setting.Label
-		
+
 		local inputbox_container = Instance.new("Frame")
 		inputbox_container.Parent = parent
 		inputbox_container.Name = "InputBox"
@@ -1679,24 +1707,24 @@ do
 		inputbox_container.BorderSizePixel = 0
 		inputbox_container.Position = UDim2.new(0.013, 0, 0.628, 0)
 		inputbox_container.Size = UDim2.new(0.7, 0, 0, 20)
-		
+
 		inputbox_container.Destroying:Once(function()
 			self:_Destroy()
 		end)
-		
+
 		local stroke = Instance.new("UIStroke")
 		stroke.Parent = inputbox_container
 		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 		stroke.Thickness = 0.5
 		stroke.Color = Color3.fromRGB(24, 44, 48)
-		
+
 		self.input_box_container = inputbox_container
 	end
-	
+
 	function input_text_class:_CreateInputBox()
 		if self.inputbox_frame then return end
 		if not self.input_box_container then return end
-		
+
 		local inputbox_frame = Instance.new("Frame")
 		inputbox_frame.Parent = self.input_box_container
 		inputbox_frame.Name = "Input"
@@ -1704,7 +1732,7 @@ do
 		inputbox_frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		inputbox_frame.BorderSizePixel = 0
 		inputbox_frame.Size = UDim2.new(0.7, 0, 1, 0)
-		
+
 		local label = Instance.new("TextLabel")
 		label.Parent = inputbox_frame
 		label.Name = "Label"
@@ -1724,11 +1752,11 @@ do
 		text_size_ratio.Parent = label
 		text_size_ratio.MinTextSize = 1
 		text_size_ratio.MaxTextSize = 14
-		
+
 		local corner_radius = Instance.new("UICorner")
 		corner_radius.Parent = inputbox_frame
 		corner_radius.CornerRadius = UDim.new(0, 4)
-		
+
 		local gradient = Instance.new("UIGradient")
 		gradient.Parent = inputbox_frame
 		gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(10, 14, 24)), ColorSequenceKeypoint.new(0.49, Color3.fromRGB(0, 0, 0)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(10, 14, 24))}
@@ -1747,15 +1775,15 @@ do
 		inputbox.Text = self.value
 		inputbox.TextColor3 = Color3.fromRGB(255, 255, 255)
 		inputbox.TextSize = 14.000
-		
+
 		self:_StoreConn(inputbox:GetPropertyChangedSignal("Text"):Connect(function()
 			self.value = inputbox.Text
-			
+
 			if self.callback then
 				self:callback(self.value)
 			end
 		end))
-		
+
 		self.inputbox = inputbox
 		self.inputbox_frame = inputbox_frame
 	end
@@ -1769,7 +1797,7 @@ do
 		self.label.Title.Text = value
 		return self
 	end
-	
+
 	function input_text_class:_Destroy()
 		if not self or self.Destroyed then return end
 		self.Destroyed = true
@@ -1782,10 +1810,10 @@ do
 
 		self.label = nil
 	end
-	
+
 	function label_class:_CreateLabel(parent, setting)
 		if self.label then return end
-		
+
 		local label = Instance.new("Frame")
 		label.Parent = parent
 		label.Name = "Label"
@@ -1794,11 +1822,11 @@ do
 		label.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		label.BorderSizePixel = 0
 		label.Size = UDim2.new(0.5, 0, 0, 20)
-		
+
 		label.Destroying:Once(function()
 			self:_Destroy()
 		end)
-		
+
 		local title = Instance.new("TextLabel")
 		title.Parent = label
 		title.Name = "Title"
@@ -1813,7 +1841,7 @@ do
 		title.TextSize = setting.TextSize
 		title.TextXAlignment = setting.TextXAlignment
 		title.TextYAlignment = setting.TextYAlignment
-		
+
 		self.label = label
 	end
 end
@@ -1838,7 +1866,7 @@ do
 	function slider_class:_StoreConn(conn)
 		return helper_functions:_StoreConn(self.stored_conn, conn)
 	end
-	
+
 	function slider_class:_Destroy()
 		if not self or self.Destroyed then return end
 		self.Destroyed = true
@@ -1861,16 +1889,16 @@ do
 		self.box = nil
 	end
 
-	
+
 	function slider_class:_CreateSliderContainer(parent, setting)
 		if self.slider_container then return end
-		
+
 		self.max = setting.Maximum
 		self.min = setting.Minimum
 		self.title = setting.Label
 		self.callback = setting.Callback
 		self.value = setting.Value
-		
+
 		local slider_container = Instance.new("Frame")
 		slider_container.Parent = parent
 		slider_container.Name = "Slider"
@@ -1879,51 +1907,51 @@ do
 		slider_container.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		slider_container.BorderSizePixel = 0
 		slider_container.Size = UDim2.new(1, 0, 0, 20)
-		
+
 		self.slider_container = slider_container
 	end
-	
+
 	function slider_class:_Update(input_obj)
 		local mouse_x = input_obj.Position.X
 		local percentage, value = self:_GetMouseValue(mouse_x)
 		value = math.floor(value)
-		
+
 		self.value = value
 		self.counter_frame.Label.Text = self.value .. " " .. self.title
-				
+
 		if self.callback then
 			self:callback(self.value)
 		end
-		
+
 		self.bar.Size = UDim2.new(percentage, 0, 1, 0)
 	end
-	
+
 	function slider_class:_GetMouseValue(mouseX)
 		local input_position_x = mouseX
 		local minimum_value = self.min or 0
 		local maximum_value = self.max or 100
-		
+
 		local box_width = self.box.AbsoluteSize.X
 		local box_edge = self.box.AbsolutePosition.X
 		local handle_width = self.handle_frame.AbsoluteSize.X
-		
+
 		local min_pos = handle_width * 0.5
 		local max_pos = box_width - handle_width
-		
+
 		local relative_x = mouseX - box_edge
 		relative_x = math.clamp(relative_x, min_pos, max_pos)
-		
+
 		local clamped = math.clamp(relative_x / box_width, 0, 1)
-		
+
 		local alpha = helper_functions:InverseLerp(min_pos, max_pos, relative_x)
 		local value = helper_functions:Lerp(minimum_value, maximum_value, alpha)
-		
+
 		return clamped, value
 	end
-	
+
 	function slider_class:_CreateSliderBar()
 		if not self.slider_container then return end
-		
+
 		local box = Instance.new("TextButton")
 		box.Parent = self.slider_container
 		box.Name = "Box"
@@ -1935,22 +1963,22 @@ do
 		box.Position = UDim2.new(0, 0, 0.5, 0)
 		box.Size = UDim2.new(0.8, 0, 0.5, 0)
 		box.AutoButtonColor = false
-		
+
 		local gradient = Instance.new("UIGradient")
 		gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(16, 24, 40)), ColorSequenceKeypoint.new(0.49, Color3.fromRGB(0, 0, 0)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(16, 24, 40))}
 		gradient.Parent = box
-		
+
 		local list_layout = Instance.new("UIListLayout")
 		list_layout.Parent = box
 		list_layout.SortOrder = Enum.SortOrder.LayoutOrder
-		
+
 		local padding = Instance.new("UIPadding")
 		padding.Parent = box
 		padding.PaddingBottom = UDim.new(0, 2)
 		padding.PaddingLeft = UDim.new(0, 4)
 		padding.PaddingRight = UDim.new(0, 4)
 		padding.PaddingTop = UDim.new(0, 2)
-		
+
 		local bar = Instance.new("Frame")
 		bar.Parent = box
 		bar.Name = "Bar"
@@ -1960,7 +1988,7 @@ do
 		bar.BorderSizePixel = 0
 		bar.Position = UDim2.new(0, 0, 0.5, 0)
 		bar.Size = UDim2.new(0.5, 0, 1, 0)
-		
+
 		local gradient_2 = Instance.new("UIGradient")
 		gradient_2.Parent = bar
 		gradient_2.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(54, 103, 148)), ColorSequenceKeypoint.new(0.48, Color3.fromRGB(155, 207, 255)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(54, 103, 148))}
@@ -1976,10 +2004,10 @@ do
 		handle_frame.AnchorPoint = Vector2.new(0, 0.5)
 		handle_frame.Position = UDim2.new(1, 0, 0.5, 0)
 		handle_frame.Size = UDim2.new(0, 15, 0, 21)
-		
+
 		local corner_radius = Instance.new("UICorner")
 		corner_radius.Parent = handle_frame
-		
+
 		local gradient = Instance.new("UIGradient")
 		gradient.Parent = handle_frame
 		gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(24, 35, 59)), ColorSequenceKeypoint.new(0.50, Color3.fromRGB(13, 13, 13)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(24, 35, 59))}
@@ -1988,35 +2016,35 @@ do
 		stroke.Parent = handle_frame
 		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 		stroke.Color = Color3.fromRGB(27, 27, 27)
-		
+
 		self:_StoreConn(box.InputBegan:Connect(function(input_obj)
 			if input_obj.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
-			
+
 			self.dragging = true
 			self:_Update(input_obj)
 		end))
-		
+
 		self:_StoreConn(userinput_service.InputEnded:Connect(function(input_obj)
 			if input_obj.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
 
 			self.dragging = false
 		end))
-		
+
 		self:_StoreConn(userinput_service.InputChanged:Connect(function(input_obj)
 			if not self.dragging or input_obj.UserInputType ~= Enum.UserInputType.MouseMovement then return end
-			
+
 			self:_Update(input_obj)
 		end))
-		
+
 		self.box = box
 		self.bar = bar
-		
+
 		self.handle_frame = handle_frame
 	end
-	
+
 	function slider_class:_CreateSliderCounter()
 		if not self.slider_container then return end
-		
+
 		local counter_frame = Instance.new("Frame")
 		counter_frame.Parent = self.slider_container
 		counter_frame.Name = "Counter"
@@ -2039,7 +2067,7 @@ do
 		stroke.Parent = counter_frame
 
 		gradient_3:Clone().Parent = stroke
-		
+
 		local Label = Instance.new("TextLabel")
 		Label.Parent = counter_frame
 		Label.Name = "Label"
@@ -2052,12 +2080,12 @@ do
 		Label.Text = self.value .. " " .. self.title
 		Label.TextColor3 = Color3.fromRGB(255, 255, 255)
 		Label.TextSize = 14.000
-		
+
 		local text_size_ratio = Instance.new("UITextSizeConstraint")
 		text_size_ratio.Parent = Label
 		text_size_ratio.MinTextSize = 1
 		text_size_ratio.MaxTextSize = 14
-		
+
 		self.counter_frame = counter_frame
 	end
 end
@@ -2069,7 +2097,7 @@ do
 	function keybind_class:_StoreConn(conn)
 		return helper_functions:_StoreConn(self.stored_conn, conn)
 	end
-	
+
 	function keybind_class:_Destroy()
 		if not self or self.Destroyed then return end
 		self.Destroyed = true
@@ -2089,7 +2117,7 @@ do
 		self.stored_conn = nil
 		self.keybind_container = nil
 	end
-	
+
 	function keybind_class:_ConvertKeycodeToText(keycode)
 		local raw = keycode.Name
 		return raw
@@ -2097,10 +2125,10 @@ do
 
 	function keybind_class:_CreateKeybind(parent, setting)
 		if self.keybind_container then return end
-		
+
 		self.value = setting.DefaultValue
 		self.callback = setting.Callback
-		
+
 		local keybind_container = Instance.new("Frame")
 		keybind_container.Parent = parent
 		keybind_container.Name = "Keybind"
@@ -2109,16 +2137,16 @@ do
 		keybind_container.BorderSizePixel = 0
 		keybind_container.Position = UDim2.new(0, 0, 0.831, 0)
 		keybind_container.Size = UDim2.new(0.4, 0, 0, 30)
-		
+
 		keybind_container.Destroying:Connect(function()
 			self:_Destroy()
 		end)
-		
+
 		local gradient = Instance.new("UIGradient")
 		gradient.Parent = keybind_container
 		gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(16, 24, 40)), ColorSequenceKeypoint.new(0.49, Color3.fromRGB(0, 0, 0)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(16, 24, 40))}
 
-		
+
 		local label = Instance.new("TextLabel")
 		label.Parent = keybind_container
 		label.Name = "Label"
@@ -2134,12 +2162,12 @@ do
 		label.TextColor3 = Color3.fromRGB(255, 255, 255)
 		label.TextSize = 16.000
 		label.TextXAlignment = Enum.TextXAlignment.Left
-		
+
 		local text_size_ratio = Instance.new("UITextSizeConstraint")
 		text_size_ratio.Parent = label
 		text_size_ratio.MinTextSize = 1
 		text_size_ratio.MaxTextSize = 14
-		
+
 		local input_box = Instance.new("TextButton")
 		input_box.Parent = keybind_container
 		input_box.Name = "Input"
@@ -2153,38 +2181,38 @@ do
 		input_box.TextColor3 = Color3.fromRGB(255, 255, 255)
 		input_box.TextSize = 14.000
 		input_box.ZIndex = 3
-		
+
 		text_size_ratio:Clone().Parent = text_size_ratio
-		
+
 		local stroke = Instance.new("UIStroke")
 		stroke.Parent = input_box
 		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 		stroke.Color = Color3.fromRGB(38, 50, 70)
-		
+
 		self:_StoreConn(input_box.MouseButton1Click:Connect(function()
 			if self.active then return end
-			
+
 			self.new_value = nil
 			self.active = true
-						
+
 			while self.active do
 				input_box.Text = "..."
 				task.wait(0.5)
 			end
 		end))
-		
+
 		self:_StoreConn(userinput_service.InputBegan:Connect(function(input, processed)
 			if processed or input.UserInputType ~= Enum.UserInputType.Keyboard then return end
-			
+
 			if self.active then
 				self.new_value = input.KeyCode
 				self.active = false
-				
-				
+
+
 				self.value = self.new_value
 				input_box.Text = self:_ConvertKeycodeToText(self.value)
 			end
-			
+
 			if self.callback and input.KeyCode == self.value then
 				self:callback(self.value)
 			end
@@ -2197,11 +2225,11 @@ end
 core_ui_manager = {} do
 	function core_ui_manager:Init()
 		local success, coreUI = pcall(function()
-			return (gethui and gethui()) or 
+			return not run_service:IsStudio() and ((gethui and gethui()) or 
 				get_hidden_gui and get_hidden_gui or
-				helper_functions:cloneRef(game:GetService("CoreGui")).RobloxGui
+				helper_functions:cloneRef(game:GetService("CoreGui")).RobloxGui) or players.LocalPlayer.PlayerGui
 		end)
-
+		
 		if success then
 			local safe_gui = Instance.new("ScreenGui")
 			safe_gui.Parent = coreUI
@@ -2251,90 +2279,90 @@ core_ui_manager = {} do
 
 		return tablist_obj
 	end
-	
+
 	function core_ui_manager:coreCreateSection(parent, setting)
 		local section_obj = setmetatable({}, section_class)
-		
+
 		section_obj:_CreateScrollingCanvas(parent, setting)
 		section_obj:_CreateSection(setting)
-		
+
 		return section_obj
 	end
-	
+
 	function core_ui_manager:coreCreateButton(parent, setting)
 		local button_obj = setmetatable({}, button_class)
 		button_obj.stored_conn = {}
-		
+
 		button_obj:_CreateButton(parent, setting)
-		
+
 		return button_obj
 	end
-	
+
 	function core_ui_manager:coreCreateCheckbox(parent, setting)
 		local checkbox_obj = setmetatable({}, checkbox_class)
 		checkbox_obj.stored_conn = {}
-				
+
 		checkbox_obj:_CreateCheckBoxContainer(parent, setting)
 		checkbox_obj:_CreateCheckboxTick()
-		
+
 		checkbox_obj.checkbox_tick.BackgroundTransparency = (setting.Value and 0 or 1)
-		
+
 		return checkbox_obj
 	end
-	
+
 	function core_ui_manager:coreCreateDropdown(parent, setting)
 		local dropdown_obj = setmetatable({}, dropdown_class)
 		dropdown_obj.stored_conn = {}
-		
+
 		dropdown_obj:_CreateDropDownContainer(parent, setting)
 		dropdown_obj:_CreateDropdownItemList()
-		
+
 		return dropdown_obj
 	end
-	
+
 	function core_ui_manager:coreCreateDivider(parent)
 		local divider_obj = setmetatable({}, divider_class)
-		
+
 		divider_obj:_CreateDivider(parent)
-		
+
 		return divider_obj
 	end
-	
+
 	function core_ui_manager:coreCreateInputBox(parent, setting)
 		local inputbox_obj = setmetatable({}, input_text_class)
 		inputbox_obj.stored_conn = {}
-		
+
 		inputbox_obj:_CreateInputContainer(parent, setting)
 		inputbox_obj:_CreateInputBox()
-		
+
 		return inputbox_obj
 	end
-	
+
 	function core_ui_manager:coreCreateLabel(parent, setting)
 		local label_obj = setmetatable({}, label_class)
-		
+
 		label_obj:_CreateLabel(parent, setting)
-		
+
 		return label_obj
 	end
-	
+
 	function core_ui_manager:coreCreateSlider(parent, setting)
 		local slider_obj = setmetatable({}, slider_class)
 		slider_obj.stored_conn = {}
-		
+
 		slider_obj:_CreateSliderContainer(parent, setting)
 		slider_obj:_CreateSliderBar()
 		slider_obj:_CreateSliderCounter()
-		
+
 		return slider_obj
 	end
-	
+
 	function core_ui_manager:coreCreateKeybind(parent, setting)
 		local keybind_obj = setmetatable({}, keybind_class)
 		keybind_obj.stored_conn = {}
-		
+
 		keybind_obj:_CreateKeybind(parent, setting)
-		
+
 		return keybind_obj
 	end
 end
@@ -2369,24 +2397,24 @@ helper_functions = {} do
 		tbl[#tbl + 1] = connection
 		return connection
 	end
-	
+
 	function helper_functions:DisconnectConn(conn: RBXScriptConnection?)
 		if conn then
 			conn:Disconnect()
 		end
 		return nil
 	end
-	
+
 	function helper_functions:DestroyElement()
-		
+
 	end
-	
+
 	function helper_functions:InverseLerp(min, max, value)
 		if min == max then return 0 end
-		
+
 		return (value - min) / (max - min)
 	end
-	
+
 	function helper_functions:Lerp(start_val, end_val, alpha)
 		return start_val + (end_val - start_val) * alpha
 	end
@@ -2452,12 +2480,12 @@ ZYVIX:InjectElement("Button", function(parent, setting)
 			print("Button pressed!")
 		end,
 	}, setting)
-	
+
 	local button_obj = core_ui_manager:coreCreateButton(parent:GetBase(), setting)
-	
+
 	button_obj._CreateButton = nil
 	button_obj._StoreConn = nil
-	
+
 	return button_obj
 end)
 
@@ -2465,16 +2493,17 @@ ZYVIX:InjectElement("Checkbox", function(parent, setting)
 	setting = helper_functions:SetConfig({
 		Label = "nil",
 		Value = false,
+		State = true, -- optional
 		Callback = function(self, value)
 			print("Checkbox pressed!", value)
 		end,
 	}, setting)
-	
+
 	local checkbox_obj = core_ui_manager:coreCreateCheckbox(parent:GetBase(), setting)
-	
+
 	checkbox_obj._CreateCheckBoxContainer = nil
 	checkbox_obj._CreateCheckboxTick = nil
-	
+
 	return checkbox_obj
 end)
 
@@ -2494,20 +2523,20 @@ ZYVIX:InjectElement("Dropdown", function(parent, setting)
 			print("selected:", value)
 		end,
 	}, setting)
-		
+
 	local dropdown_obj = core_ui_manager:coreCreateDropdown(parent:GetBase(), setting)
-	
+
 	dropdown_obj._CreateDropDownContainer = nil
 	dropdown_obj._CreateDropdownItemList = nil
-	
+
 	return dropdown_obj
 end)
 
 ZYVIX:InjectElement("Divider", function(parent)
 	local divider_obj = core_ui_manager:coreCreateDivider(parent:GetBase())
-	
+
 	divider_obj._CreateDivider = nil
-	
+
 	return divider_obj
 end)
 
@@ -2520,12 +2549,12 @@ ZYVIX:InjectElement("InputBox", function(parent, setting)
 			print(value)
 		end,
 	}, setting)
-	
+
 	local inputbox_obj = core_ui_manager:coreCreateInputBox(parent:GetBase(), setting)
-	
+
 	inputbox_obj._CreateInputContainer = nil
 	inputbox_obj._CreateInputBox = nil
-	
+
 	return inputbox_obj
 end)
 
@@ -2536,13 +2565,13 @@ ZYVIX:InjectElement("Label", function(parent, setting)
 		TextSize = 14.000,
 		TextXAlignment = Enum.TextXAlignment.Left,
 		TextYAlignment = Enum.TextYAlignment.Center,
-		
+
 	}, setting)
-	
+
 	local label_obj = core_ui_manager:coreCreateLabel(parent:GetBase(), setting)
-	
+
 	label_obj._CreateLabel = nil
-	
+
 	return label_obj
 end)
 
@@ -2556,13 +2585,13 @@ ZYVIX:InjectElement("Slider", function(parent, setting)
 			print(value)
 		end,
 	}, setting)
-	
+
 	local slider_obj = core_ui_manager:coreCreateSlider(parent:GetBase(), setting)
-	
+
 	slider_obj._CreateSliderContainer = nil
 	slider_obj._CreateSliderBar = nil
 	slider_obj._CreateSliderCounter = nil
-	
+
 	return slider_obj
 end)
 
@@ -2574,11 +2603,11 @@ ZYVIX:InjectElement("Keybind", function(parent, setting)
 			print("WSIgrjorgrw")
 		end,
 	}, setting)
-	
+
 	local keybind_obj = core_ui_manager:coreCreateKeybind(parent:GetBase(), setting)
-	
+
 	keybind_obj._CreateKeybind = nil
-	
+
 	return keybind_obj
 end)
 
