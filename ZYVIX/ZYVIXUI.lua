@@ -1,5 +1,5 @@
 --[[
-v1.0.5
+v1.0.6
 _______________.___.____   ____._______  ___
 \____    /\__  |   |\   \ /   /|   \   \/  /
   /     /  /   |   | \   Y   / |   |\     / 
@@ -18,6 +18,9 @@ architectural design and research: https://docs.google.com/document/d/1ATcD0tQCq
 THE STRUCTURE DESIGN OF THIS UI LIB IS SIMILAR BUT NOT SKIDDED FROM (regui). IT HAS BEEN FULLY REWRITTEN.
 
 "It is never too late to be what you might have been." - George Eliot
+
+Date of production: 5/7/2026
+Date of completion: 5/29/2026
 ]]
 
 if not game:IsLoaded() then game.Loaded:Wait() end
@@ -2494,7 +2497,7 @@ ZYVIX:InjectElement("Section", function(parent, setting)
 	local section_main = core_ui_manager:coreCreateSection(parent:GetBase(), setting)
 
 	section_main._CreateScrollingCanvas = nil
-	section_class._CreateSection = nil
+	section_main._CreateSection = nil
 
 	return section_main
 end)
