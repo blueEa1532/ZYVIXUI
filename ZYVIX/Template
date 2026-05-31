@@ -14,13 +14,15 @@ sec:Button({
 	end,
 })
 
-sec:Checkbox({
+e = sec:Checkbox({
 	Label = "hey",
 	Value = true,
 	Callback = function(self, value)
 		print(value)
 	end,
 })
+
+e:SetState(false)
 
 sec:Divider()
 
@@ -52,9 +54,9 @@ sec:InputBox({
 
 sec:Slider({
 	Label = "speed",
-	Minimum = 0,
-	Maximum = 100,
-	Value = 25,
+	Minimum = 25,
+	Maximum = 200,
+	Value = 100,
 	Callback = function(self, value)
 		print("yay", value)
 	end,
@@ -67,3 +69,8 @@ sec:Keybind({
 		print("just look around")
 	end,
 })
+
+task.wait(10)
+
+
+e:SetState(true)
