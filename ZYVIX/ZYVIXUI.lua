@@ -2206,7 +2206,7 @@ core_ui_manager = {} do
 			safe_gui.Name = "ZYVIX"
 			safe_gui.ResetOnSpawn = false
 			safe_gui.IgnoreGuiInset = true
-			safe_guf.ZIndexBehavior = Enum.ZIndexBehavior.Global
+			safe_gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
 			self.safe_gui = safe_gui
 		else
 			print("Critical error: no suitable parent found")
