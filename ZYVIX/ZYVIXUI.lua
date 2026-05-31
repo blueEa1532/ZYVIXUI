@@ -1,5 +1,5 @@
 --[[
-v1.0.4
+v1.0.5
 _______________.___.____   ____._______  ___
 \____    /\__  |   |\   \ /   /|   \   \/  /
   /     /  /   |   | \   Y   / |   |\     / 
@@ -1118,10 +1118,9 @@ do
 		self:_SetValue(not self.value)
 		return self
 	end
-	
+
 	function checkbox_class:SetState(boolean)
 		self:_ChangeState(boolean)
-		print(boolean)
 		return self
 	end
 
@@ -1151,16 +1150,15 @@ do
 	end
 
 	function checkbox_class:_ChangeState(value)
-		if not self.btn_frame then return end
 		if not self.checkbox_container then return end
-		
+
 		self.state = value
 		self.checkbox_container.BackgroundTransparency = not self.state and 0.500 or 1.000
 
 		if self.callback then
 			self:callback(false)
 		end
-		
+
 		self:_SetValue(false)
 	end
 
@@ -1653,6 +1651,11 @@ local input_text_class = table.create(8)
 input_text_class.__index = input_text_class
 
 do
+	
+	function input_text_class:SetState(boolean)
+		self:_ChangeState(boolean)
+		return self
+	end
 
 	function input_text_class:_StoreConn(conn)
 		return helper_functions:_StoreConn(self.stored_conn, conn)
@@ -1682,6 +1685,15 @@ do
 		self:_ChangeValue(value)
 		return self
 	end
+	
+	function input_text_class:_ChangeState(value)
+		if not self.input_box_container then return end
+
+		self.state = value
+		self.input_box_container.BackgroundTransparency = not self.state and 0.500 or 1.000
+
+		self:_ChangeValue(self.initial_value)
+	end
 
 	function input_text_class:_ChangeValue(value)
 		if not self.inputbox then return end
@@ -1694,19 +1706,28 @@ do
 		if self.input_box_container then return end
 
 		self.placeholder_text = setting.placeholder_text
+		
 		self.value = setting.value
+		self.initial_value = self.value
+		
 		self.callback = setting.Callback
 		self.label = setting.Label
+		self.state = setting.State
 
 		local inputbox_container = Instance.new("Frame")
 		inputbox_container.Parent = parent
 		inputbox_container.Name = "InputBox"
-		inputbox_container.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-		inputbox_container.BackgroundTransparency = 1.000
+		inputbox_container.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+		inputbox_container.BackgroundTransparency = not self.state and 0.500 or 1.000
 		inputbox_container.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		inputbox_container.BorderSizePixel = 0
 		inputbox_container.Position = UDim2.new(0.013, 0, 0.628, 0)
 		inputbox_container.Size = UDim2.new(0.7, 0, 0, 20)
+		inputbox_container.ZIndex = 2
+		
+		local corner_radius = Instance.new("UICorner")
+		corner_radius.Parent = inputbox_container
+		corner_radius.CornerRadius = UDim.new(0, 2)
 
 		inputbox_container.Destroying:Once(function()
 			self:_Destroy()
@@ -1777,6 +1798,11 @@ do
 		inputbox.TextSize = 14.000
 
 		self:_StoreConn(inputbox:GetPropertyChangedSignal("Text"):Connect(function()
+			if not self.state then
+				self:_ChangeValue(self.initial_value)
+				return
+			end
+			
 			self.value = inputbox.Text
 
 			if self.callback then
@@ -2229,7 +2255,7 @@ core_ui_manager = {} do
 				get_hidden_gui and get_hidden_gui or
 				helper_functions:cloneRef(game:GetService("CoreGui")).RobloxGui) or players.LocalPlayer.PlayerGui
 		end)
-		
+
 		if success then
 			local safe_gui = Instance.new("ScreenGui")
 			safe_gui.Parent = coreUI
