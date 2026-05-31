@@ -2104,6 +2104,7 @@ do
 		Label.BackgroundTransparency = 1.000
 		Label.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		Label.BorderSizePixel = 0
+		Label.TextScaled = true
 		Label.Size = UDim2.new(1, 0, 1, 0)
 		Label.Font = Enum.Font.MontserratMedium
 		Label.Text = self.value .. " " .. self.title
