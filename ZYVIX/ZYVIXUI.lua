@@ -1,5 +1,5 @@
 --[[
-v1.0.6
+v1.0.7
 _______________.___.____   ____._______  ___
 \____    /\__  |   |\   \ /   /|   \   \/  /
   /     /  /   |   | \   Y   / |   |\     / 
@@ -1344,7 +1344,7 @@ do
 	end
 
 	function dropdown_class:SetItem(value)
-		self:_ChangeValue(value)
+		self:_ChangeItem(value)
 		return self
 	end
 
@@ -1654,7 +1654,7 @@ local input_text_class = table.create(8)
 input_text_class.__index = input_text_class
 
 do
-	
+
 	function input_text_class:SetState(boolean)
 		self:_ChangeState(boolean)
 		return self
@@ -1688,7 +1688,7 @@ do
 		self:_ChangeValue(value)
 		return self
 	end
-	
+
 	function input_text_class:_ChangeState(value)
 		if not self.input_box_container then return end
 
@@ -1709,10 +1709,10 @@ do
 		if self.input_box_container then return end
 
 		self.placeholder_text = setting.placeholder_text
-		
+
 		self.value = setting.Value
 		self.initial_value = self.value
-		
+
 		self.callback = setting.Callback
 		self.label = setting.Label
 		self.state = setting.State
@@ -1727,7 +1727,7 @@ do
 		inputbox_container.Position = UDim2.new(0.013, 0, 0.628, 0)
 		inputbox_container.Size = UDim2.new(0.7, 0, 0, 20)
 		inputbox_container.ZIndex = 2
-		
+
 		local corner_radius = Instance.new("UICorner")
 		corner_radius.Parent = inputbox_container
 		corner_radius.CornerRadius = UDim.new(0, 2)
@@ -1805,7 +1805,7 @@ do
 				self:_ChangeValue(self.initial_value)
 				return
 			end
-			
+
 			self.value = inputbox.Text
 
 			if self.callback then
@@ -1892,6 +1892,11 @@ local slider_class = table.create(8)
 slider_class.__index = slider_class
 
 do
+	function slider_class:SetValue(value)
+		self:_ChangeValue(value)
+		return self
+	end
+
 	function slider_class:_StoreConn(conn)
 		return helper_functions:_StoreConn(self.stored_conn, conn)
 	end
@@ -1977,12 +1982,25 @@ do
 
 		return clamped, value
 	end
-	
+
 	function slider_class:_GetSliderOffset(value, minimum_value, maximum_value)
 		local alpha = helper_functions:InverseLerp(minimum_value, maximum_value, value)
-		alpha = math.clamp(alpha, 0, 1)
-		
+
 		return alpha
+	end
+
+	function slider_class:_ChangeValue(value)
+		if not self.counter_frame then return end
+		if not self.bar then return end
+
+		self.value = value
+		self.bar.Size = UDim2.new(slider_class:_GetSliderOffset(self.value, self.min, self.max), 0, 1, 0)
+		
+		self.counter_frame.Label.Text = self.value .. " " .. self.title
+
+		if self.callback then
+			self:callback(self.value)
+		end
 	end
 
 	function slider_class:_CreateSliderBar()
@@ -1999,7 +2017,7 @@ do
 		box.Position = UDim2.new(0, 0, 0.5, 0)
 		box.Size = UDim2.new(0.8, 0, 0.5, 0)
 		box.AutoButtonColor = false
-		
+
 
 		local gradient = Instance.new("UIGradient")
 		gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(16, 24, 40)), ColorSequenceKeypoint.new(0.49, Color3.fromRGB(0, 0, 0)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(16, 24, 40))}
@@ -2025,7 +2043,7 @@ do
 		bar.BorderSizePixel = 0
 		bar.Position = UDim2.new(0, 0, 0.5, 0)
 		bar.Size = UDim2.new(slider_class:_GetSliderOffset(self.value, self.min, self.max), 0, 1, 0)
-		
+
 
 		local gradient_2 = Instance.new("UIGradient")
 		gradient_2.Parent = bar
