@@ -1,5 +1,5 @@
 --[[
-v1.0.6
+v1.0.7
 _______________.___.____   ____._______  ___
 \____    /\__  |   |\   \ /   /|   \   \/  /
   /     /  /   |   | \   Y   / |   |\     / 
@@ -1977,6 +1977,15 @@ do
 
 		return clamped, value
 	end
+	
+	function slider_class:_GetSliderOffset(value)
+		local minimum_value = self.min or 0
+		local maximum_value = self.max or 100
+		
+		local alpha = helper_functions:InverseLerp(minimum_value, maximum_value, value)
+		
+		return alpha
+	end
 
 	function slider_class:_CreateSliderBar()
 		if not self.slider_container then return end
@@ -1992,6 +2001,7 @@ do
 		box.Position = UDim2.new(0, 0, 0.5, 0)
 		box.Size = UDim2.new(0.8, 0, 0.5, 0)
 		box.AutoButtonColor = false
+		
 
 		local gradient = Instance.new("UIGradient")
 		gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(16, 24, 40)), ColorSequenceKeypoint.new(0.49, Color3.fromRGB(0, 0, 0)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(16, 24, 40))}
@@ -2016,7 +2026,8 @@ do
 		bar.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		bar.BorderSizePixel = 0
 		bar.Position = UDim2.new(0, 0, 0.5, 0)
-		bar.Size = UDim2.new(0.5, 0, 1, 0)
+		bar.Size = UDim2.new(slider_class:_GetSliderOffset(self.value), 0, 1, 0)
+		
 
 		local gradient_2 = Instance.new("UIGradient")
 		gradient_2.Parent = bar
