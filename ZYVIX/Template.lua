@@ -6,7 +6,35 @@ local tablist = h4ck3r:Tablist()
 
 local tab2 = tablist:CreateTab("hei")
 
-local sec = tab2:Section(tab2)
+local function CreateSection(Parent, Title)
+	local Region = Parent:Section()
+
+	if Title then
+		Region:Label({
+			Text = Title,
+		})
+	end
+
+	return Region
+end
+
+
+local function CreateGroup(Parent, Title)
+	local Group = Parent:Group()
+
+	if Title then
+		Group:Label({
+			Text = Title,
+		})
+	end
+
+	return Group
+end
+
+
+local sec = CreateSection(tab2, "title")
+local se2c = CreateSection(tab2, "example")
+
 sec:Button({
 	Label = "tesxr",
 	Callback = function()
@@ -26,7 +54,7 @@ e:SetState(false)
 
 sec:Divider()
 
-sec:Dropdown({
+e = sec:Dropdown({
 	Label = "Dropdown",
 	Items = {
 		"hello",
@@ -38,31 +66,38 @@ sec:Dropdown({
 	end,
 })
 
+e:SetItem("option 2")
+
 sec:Label({Text = "hello"})
 
 local fuck_you = 24
 
-sec:InputBox({
+a = sec:InputBox({
 	Label = "Jump",
 	placeholder_text = "number",
-	value = "24",
+	Value = "24",
+	State = false,
 	Callback = function(self, value)
 		fuck_you = value
 		print(fuck_you)
 	end,
 })
 
-sec:Slider({
+local group = CreateGroup(sec, "group 1")
+
+qwef = group:Slider({
 	Label = "speed",
 	Minimum = 25,
-	Maximum = 200,
-	Value = 100,
+	Maximum = 100,
+	Value = 50,
+	Decimal = ".0",
 	Callback = function(self, value)
 		print("yay", value)
 	end,
 })
 
-sec:Keybind({
+
+group:Keybind({
 	Label = "Fly Keybind",
 	DefaultValue = Enum.KeyCode.F,
 	Callback = function(self, value)
@@ -71,6 +106,3 @@ sec:Keybind({
 })
 
 task.wait(10)
-
-
-e:SetState(true)
