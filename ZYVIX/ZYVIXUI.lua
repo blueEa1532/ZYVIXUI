@@ -1,5 +1,5 @@
 --[[
-v1.0.7
+v1.0.8
 _______________.___.____   ____._______  ___
 \____    /\__  |   |\   \ /   /|   \   \/  /
   /     /  /   |   | \   Y   / |   |\     / 
@@ -1932,6 +1932,7 @@ do
 		self.title = setting.Label
 		self.callback = setting.Callback
 		self.value = setting.Value
+		self.format = setting.Decimal
 
 		local slider_container = Instance.new("Frame")
 		slider_container.Parent = parent
@@ -1948,7 +1949,12 @@ do
 	function slider_class:_Update(input_obj)
 		local mouse_x = input_obj.Position.X
 		local percentage, value = self:_GetMouseValue(mouse_x)
-		value = math.floor(value)
+		
+		local format = tonumber(self.format:match("%.(%d+)"))
+		
+		local shift = 10 ^ format
+		
+		value = math.floor(value * shift + 0.5) / shift
 
 		self.value = value
 		self.counter_frame.Label.Text = self.value .. " " .. self.title
@@ -2279,6 +2285,55 @@ do
 	end
 end
 
+local group_class = table.create(8)
+group_class.__index = group_class
+
+do 
+	function group_class:GetBase()
+		return self.group_container
+	end
+	
+	function group_class:_CreateGroupContent(parent, setting)
+		if self.group_container then return end
+		
+		local group_container = Instance.new("Frame")
+		group_container.Parent = parent
+		group_container.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		group_container.BackgroundTransparency = 0.400
+		group_container.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		group_container.BorderSizePixel = 0
+		
+		local corner_radius = Instance.new("UICorner")
+		local padding = Instance.new("UIPadding")
+		local list_layout = Instance.new("UIListLayout")
+		local gradient = Instance.new("UIGradient")
+		local stroke = Instance.new("UIStroke")
+
+		gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(16, 24, 40)), ColorSequenceKeypoint.new(0.49, Color3.fromRGB(0, 0, 0)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(16, 24, 40))}
+		gradient.Parent = group_container
+
+		corner_radius.Parent = group_container
+
+		padding.Parent = group_container
+		padding.PaddingBottom = UDim.new(0, 8)
+		padding.PaddingLeft = UDim.new(0, 8)
+		padding.PaddingRight = UDim.new(0, 8)
+		padding.PaddingTop = UDim.new(0, 8)
+
+		list_layout.Parent = group_container
+		list_layout.SortOrder = Enum.SortOrder.LayoutOrder
+		list_layout.Padding = UDim.new(0, 8)
+		
+		stroke.Parent = group_container
+		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		stroke.Transparency = 0.5
+		stroke.Color = Color3.fromRGB(35, 35, 35)
+		
+		self.group_container = group_container
+	end
+end
+
+
 core_ui_manager = {} do
 	function core_ui_manager:Init()
 		local success, coreUI = pcall(function()
@@ -2422,6 +2477,14 @@ core_ui_manager = {} do
 
 		return keybind_obj
 	end
+	
+	function core_ui_manager:coreCreateGroup(parent, setting)
+		local group_obj = setmetatable({}, group_class)
+		
+		group_obj:_CreateGroupContent(parent, setting)
+		
+		return group_obj
+	end
 end
 
 helper_functions = {} do
@@ -2528,6 +2591,14 @@ ZYVIX:InjectElement("Section", function(parent, setting)
 	section_main._CreateSection = nil
 
 	return section_main
+end)
+
+ZYVIX:InjectElement("Group", function(parent, setting)
+	local group_main = core_ui_manager:coreCreateSection(parent:GetBase(), setting)
+
+	group_main._CreateGroupContent = nil
+
+	return group_main
 end)
 
 ZYVIX:InjectElement("Button", function(parent, setting)
@@ -2639,6 +2710,7 @@ ZYVIX:InjectElement("Slider", function(parent, setting)
 		Minimum = 0,
 		Maximum = 100,
 		Value = 25,
+		Decimal = ".0",
 		Callback = function(self, value)
 			print(value)
 		end,
