@@ -2287,6 +2287,8 @@ end
 
 local group_class = table.create(8)
 group_class.__index = group_class
+setmetatable(group_class, { __index = container_base })
+
 
 do 
 	function group_class:GetBase()
@@ -2298,6 +2300,9 @@ do
 		
 		local group_container = Instance.new("Frame")
 		group_container.Parent = parent
+		group_container.Name = "Group"
+		group_container.Size = UDim2.new(1, 0, 0, 0)
+		group_container.AutomaticSize = Enum.AutomaticSize.Y
 		group_container.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 		group_container.BackgroundTransparency = 0.400
 		group_container.BorderColor3 = Color3.fromRGB(0, 0, 0)
@@ -2594,7 +2599,7 @@ ZYVIX:InjectElement("Section", function(parent, setting)
 end)
 
 ZYVIX:InjectElement("Group", function(parent, setting)
-	local group_main = core_ui_manager:coreCreateSection(parent:GetBase(), setting)
+	local group_main = core_ui_manager:coreCreateGroup(parent:GetBase(), setting)
 
 	group_main._CreateGroupContent = nil
 
