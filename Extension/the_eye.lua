@@ -5,7 +5,8 @@
 
 if not game:IsLoaded() then game.Loaded:Wait() end
 
-local the_eye = script.Parent
+local the_eye = loadstring(game:HttpGet("https://raw.githubusercontent.com/blueEa1532/ZYVIXUI/refs/heads/main/Extension/UI.lua"))()
+
 
 local proxy
 
@@ -25,6 +26,14 @@ local tween_service = proxy.TweenService
 local run_service = proxy.RunService
 local players = proxy.Players
 local userinput_service = proxy.UserInputService
+
+local success, coreUI = pcall(function()
+	return not run_service:IsStudio() and ((gethui and gethui()) or 
+		get_hidden_gui and get_hidden_gui or
+		helper_functions:cloneRef(game:GetService("CoreGui")).RobloxGui) or players.LocalPlayer.PlayerGui
+end)
+
+the_eye.Parent = coreUI
 
 
 local local_player = players.LocalPlayer
