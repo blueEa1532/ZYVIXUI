@@ -90,12 +90,6 @@ do
 
 		table.insert(self.memorys[char.Name].Positions, hrp.Position)
 
-		local part = Instance.new("Part")
-		part.Parent = workspace
-		part.Anchored = true
-		part.Size = Vector3.new(1, 1, 1)
-		part.CanCollide = false
-		part.Position = hrp.Position
 	end
 
 	function memory_manager:ScanAllPlayers()
