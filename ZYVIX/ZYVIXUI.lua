@@ -1,5 +1,5 @@
 --[[
-v1.0.8
+v1.0.9
 _______________.___.____   ____._______  ___
 \____    /\__  |   |\   \ /   /|   \   \/  /
   /     /  /   |   | \   Y   / |   |\     / 
@@ -209,6 +209,16 @@ do
 		window_frame.AnchorPoint = Vector2.new(0.5, 0)
 		window_frame.Position = pos
 		window_frame.Size = size
+		
+		local image_label = Instance.new("ImageLabel")
+		image_label.Parent = window_frame
+		image_label.Name = "Eye"
+		image_label.Size = UDim2.new(1,0,1,0)
+		image_label.BackgroundTransparency = 1
+		image_label.Image = "rbxassetid://98388929815173"
+		image_label.ScaleType = Enum.ScaleType.Fit
+		image_label.ZIndex = -2
+		image_label.ImageTransparency = 0.5
 
 
 
@@ -1827,7 +1837,7 @@ do
 		return self
 	end
 
-	function input_text_class:_Destroy()
+	function label_class:_Destroy()
 		if not self or self.Destroyed then return end
 		self.Destroyed = true
 
@@ -1949,11 +1959,11 @@ do
 	function slider_class:_Update(input_obj)
 		local mouse_x = input_obj.Position.X
 		local percentage, value = self:_GetMouseValue(mouse_x)
-		
+
 		local format = tonumber(self.format:match("%.(%d+)"))
-		
+
 		local shift = 10 ^ format
-		
+
 		value = math.floor(value * shift + 0.5) / shift
 
 		self.value = value
@@ -2001,7 +2011,7 @@ do
 
 		self.value = value
 		self.bar.Size = UDim2.new(slider_class:_GetSliderOffset(self.value, self.min, self.max), 0, 1, 0)
-		
+
 		self.counter_frame.Label.Text = self.value .. " " .. self.title
 
 		if self.callback then
@@ -2294,10 +2304,10 @@ do
 	function group_class:GetBase()
 		return self.group_container
 	end
-	
+
 	function group_class:_CreateGroupContent(parent, setting)
 		if self.group_container then return end
-		
+
 		local group_container = Instance.new("Frame")
 		group_container.Parent = parent
 		group_container.Name = "Group"
@@ -2307,7 +2317,7 @@ do
 		group_container.BackgroundTransparency = 0.400
 		group_container.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		group_container.BorderSizePixel = 0
-		
+
 		local corner_radius = Instance.new("UICorner")
 		local padding = Instance.new("UIPadding")
 		local list_layout = Instance.new("UIListLayout")
@@ -2328,12 +2338,12 @@ do
 		list_layout.Parent = group_container
 		list_layout.SortOrder = Enum.SortOrder.LayoutOrder
 		list_layout.Padding = UDim.new(0, 8)
-		
+
 		stroke.Parent = group_container
 		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 		stroke.Transparency = 0.5
 		stroke.Color = Color3.fromRGB(35, 35, 35)
-		
+
 		self.group_container = group_container
 	end
 end
@@ -2482,12 +2492,12 @@ core_ui_manager = {} do
 
 		return keybind_obj
 	end
-	
+
 	function core_ui_manager:coreCreateGroup(parent, setting)
 		local group_obj = setmetatable({}, group_class)
-		
+
 		group_obj:_CreateGroupContent(parent, setting)
-		
+
 		return group_obj
 	end
 end
