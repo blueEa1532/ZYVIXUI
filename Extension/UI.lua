@@ -1102,6 +1102,8 @@ G2L["64"]["Size"] = UDim2.new(0.5, 0, 0, 30);
 G2L["64"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
 G2L["64"]["Name"] = [[Template]];
 G2L["64"]["BackgroundTransparency"] = 1;
+G2L["64"]["Visible"] = false;
+
 
 
 -- StarterGui.eye.window_frame.main_container.MainFrame.Main.Properties.Inner.Template.UIStroke
@@ -1125,6 +1127,7 @@ G2L["66"]["RichText"] = true;
 G2L["66"]["Size"] = UDim2.new(0.5, 0, 1, 0);
 G2L["66"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
 G2L["66"]["Text"] = [[HP]];
+
 G2L["66"]["Name"] = [[Property]];
 
 
