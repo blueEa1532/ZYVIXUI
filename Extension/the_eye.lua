@@ -131,6 +131,12 @@ function loading:_Init()
 
 	self.console = self.load_content.Console
 	self.template = self.console.Template
+	self.title = self.load_content.Title
+	
+	local title = identifyexecutor and identifyexecutor() or "Executor"
+	
+	self.title.EXEC.Text = "EXECUTOR: " .. title
+	self.title.Title.Text = "CLASS OBJECT: " .. local_player.Name
 
 	task.defer(function()
 		while task.wait() do
