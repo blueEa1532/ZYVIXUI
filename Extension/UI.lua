@@ -4,14 +4,14 @@
 88      88    88    88            odD'      88      88    88 88ooo88 
 88  ooo 88    88    88          .88'        88      88    88 88~~~88 
 88. ~8~ 88b  d88   .88.        j88.         88booo. 88b  d88 88   88    @uniquadev
- Y888P  ~Y8888P' Y888888P      888888D      Y88888P ~Y8888P' YP   YP  CONVERTER 
+ Y888P  ~Y8888P' Y888888P      888888D      Y88888P ~Y8888P' YP   YP  CONVERR 
 ]=]
 
 -- Instances: 167 | Scripts: 0 | Modules: 0 | Tags: 0
 local G2L = {};
 
 -- StarterGui.eye
-G2L["1"] = Instance.new("ScreenGui");
+G2L["1"] = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"));
 G2L["1"]["IgnoreGuiInset"] = true;
 G2L["1"]["ScreenInsets"] = Enum.ScreenInsets.DeviceSafeInsets;
 G2L["1"]["Name"] = [[eye]];
@@ -1053,6 +1053,8 @@ G2L["5f"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
 G2L["5f"]["Size"] = UDim2.new(1, 0, 1, 0);
 G2L["5f"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
 G2L["5f"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["5f"]["Visible"] = false;
+
 G2L["5f"]["Name"] = [[Main]];
 G2L["5f"]["BackgroundTransparency"] = 1;
 
@@ -1259,7 +1261,7 @@ G2L["6f"]["Position"] = UDim2.new(0.5, 0, 1, 0);
 -- StarterGui.eye.window_frame.main_container.MainFrame.Main.Watermark.UITextSizeConstraint
 G2L["70"] = Instance.new("UITextSizeConstraint", G2L["6f"]);
 G2L["70"]["MaxTextSize"] = 14;
-
+ 
 
 -- StarterGui.eye.window_frame.main_container.MainFrame.Main.Watermark.Glow
 G2L["71"] = Instance.new("ImageLabel", G2L["6f"]);
