@@ -1,5 +1,5 @@
 --[[
-v1.0.9
+v1.1.0
 _______________.___.____   ____._______  ___
 \____    /\__  |   |\   \ /   /|   \   \/  /
   /     /  /   |   | \   Y   / |   |\     / 
@@ -105,6 +105,10 @@ do
 
 	function main_window_class:GetBase()
 		return self.window_content
+	end
+	
+	function main_window_class:GetContainer()
+		return self.window_base
 	end
 
 	function main_window_class:SetPos(pos: UDim2)
@@ -1120,11 +1124,16 @@ then set up coreui manager function folloiwng the format accordinly and inject e
 
 local checkbox_class = table.create(8)
 checkbox_class.__index = checkbox_class
+setmetatable(checkbox_class, { __index = container_base })
 
 do
 	function checkbox_class:SetValue(boolean)
 		self:_SetValue(boolean)
 		return self
+	end
+	
+	function checkbox_class:GetBase()
+		return self.checkbox_container
 	end
 
 	function checkbox_class:Toggle()
@@ -2348,6 +2357,246 @@ do
 	end
 end
 
+--[[
+
+inject setting icon to an element
+
+upon clicking on it, it will show a popup which is contain_based
+elements can now add things inside the box
+
+supported elements:
+
+checkbox
+
+]]
+
+local pop_up_class = table.create(8)
+pop_up_class.__index = pop_up_class
+setmetatable(pop_up_class, { __index = container_base })
+
+do
+	
+	function pop_up_class:GetBase()
+		return self.content
+	end
+	
+	function pop_up_class:_StoreConn(conn)
+		return helper_functions:_StoreConn(self.stored_conn, conn)
+	end
+	
+	function pop_up_class:_Destroy()
+		if not self or self.Destroyed then return end
+		self.Destroyed = true
+
+		for _, conn in ipairs(self.stored_conn) do
+			if conn then
+				conn = helper_functions:DisconnectConn(conn)
+			end
+		end
+
+		if self.popup_window then
+			pcall(function()
+				self.popup_window:Destroy()
+			end)
+		end
+
+		self.stored_conn = nil
+		self.title_bar = nil
+		self.popup_window = nil
+	end
+
+	function pop_up_class:_CreatePopup(parent, setting)
+		if self.popup_window then return end
+		
+		self.title = setting.Title 
+		
+		local popup_window = Instance.new("Frame")
+		popup_window.Name = "popup_window"
+		popup_window.Parent = parent
+		popup_window.AnchorPoint = Vector2.new(0.5, 0.5)
+		popup_window.BackgroundColor3 = Color3.fromRGB(21, 46, 54)
+		popup_window.BackgroundTransparency = 0.350
+		popup_window.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		popup_window.BorderSizePixel = 0
+		popup_window.Active = true
+		popup_window.ClipsDescendants = true
+		popup_window.Position = UDim2.new(0.5, 0, 0.5, 0)
+		popup_window.Size = UDim2.new(0.5, 0, 0.5, 0)
+		popup_window.ZIndex = 3
+		
+		local corner_radius = Instance.new("UICorner")
+		corner_radius.Parent = popup_window
+		
+		local stroke = Instance.new("UIStroke")
+		stroke.Parent = popup_window
+		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		stroke.Color = Color3.fromRGB(255, 255, 255)
+		
+		local gradient = Instance.new("UIGradient")
+		gradient.Parent = stroke
+		gradient.Transparency = NumberSequence.new{
+			NumberSequenceKeypoint.new(0.00, 0.00), 
+			NumberSequenceKeypoint.new(0.51, 1.00), 
+			NumberSequenceKeypoint.new(1.00, 0.00)
+		}
+		gradient.Color = ColorSequence.new{
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(68, 126, 139)), 
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(68, 126, 139))
+		}
+		gradient.Rotation = 60
+		
+		self.popup_window = popup_window
+	end
+	
+	function pop_up_class:_CreateTitleBar()
+		if self.title_bar then return end
+		if not self.popup_window then return end
+
+		local title_bar = Instance.new("Frame")
+		title_bar.Name = "TitleBar"
+		title_bar.Parent = self.popup_window
+		title_bar.BackgroundColor3 = Color3.fromRGB(16, 20, 26)
+		title_bar.BackgroundTransparency = 1.000
+		title_bar.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		title_bar.BorderSizePixel = 0
+		title_bar.ClipsDescendants = true
+		title_bar.LayoutOrder = -1
+		title_bar.Position = UDim2.new(0, 0, -0.002, 0)
+		title_bar.Size = UDim2.new(1, 0, 0.185, 0)
+		title_bar.ZIndex = 2
+
+		local padding = Instance.new("UIPadding")
+		padding.Parent = title_bar
+		padding.PaddingLeft = UDim.new(0, 15)
+
+		local management_frame = Instance.new("Frame")
+		management_frame.Parent = title_bar
+		management_frame.AnchorPoint = Vector2.new(1, 0)
+		management_frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		management_frame.BackgroundTransparency = 1.000
+		management_frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		management_frame.BorderSizePixel = 0
+		management_frame.Position = UDim2.new(1, 0, 0, 0)
+		management_frame.Size = UDim2.new(0.2, 0, 1, 0)
+
+		local list_layout = Instance.new("UIListLayout")
+		list_layout.Parent = management_frame
+		list_layout.FillDirection = Enum.FillDirection.Horizontal
+		list_layout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+		list_layout.SortOrder = Enum.SortOrder.LayoutOrder
+		list_layout.VerticalAlignment = Enum.VerticalAlignment.Center
+		list_layout.Padding = UDim.new(0, 7)
+
+		local padding_2 = Instance.new("UIPadding")
+		padding_2.Parent = management_frame
+		padding_2.PaddingRight = UDim.new(0, 7)
+
+		local close_btn = Instance.new("Frame")
+		close_btn.Name = "CloseBtn"
+		close_btn.Parent = management_frame
+		close_btn.AnchorPoint = Vector2.new(0, 0.5)
+		close_btn.BackgroundColor3 = Color3.fromRGB(13, 19, 26)
+		close_btn.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		close_btn.BorderSizePixel = 0
+		close_btn.LayoutOrder = 1
+		close_btn.Size = UDim2.new(0.6, 0, 0.6, 0)
+
+		local close_btn_img = Instance.new("ImageButton")
+		close_btn_img.Name = "CloseBtn"
+		close_btn_img.Parent = close_btn
+		close_btn_img.AnchorPoint = Vector2.new(0.5, 0.5)
+		close_btn_img.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+		close_btn_img.BackgroundTransparency = 1.000
+		close_btn_img.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		close_btn_img.BorderSizePixel = 0
+		close_btn_img.LayoutOrder = 2
+		close_btn_img.Position = UDim2.new(0.5, 0, 0.5, 0)
+		close_btn_img.Size = UDim2.new(0.75, 0, 0.75, 0)
+		close_btn_img.Image = "rbxassetid://10137832201"
+		close_btn_img.ImageTransparency = 0.500
+		close_btn_img.ZIndex = 5
+
+		local aspect_ratio = Instance.new("UIAspectRatioConstraint")
+		aspect_ratio.Parent = close_btn
+
+		local corner = Instance.new("UICorner")
+		corner.Parent = close_btn
+
+		local content = Instance.new("Frame")
+		content.Name = "Content"
+		content.Parent = self.popup_window
+		content.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		content.BackgroundTransparency = 1.000
+		content.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		content.BorderSizePixel = 0
+		content.Position = UDim2.new(0, 0, 0.2, 0)
+		content.Size = UDim2.new(1, 0, 0.8, 0)
+
+		local padding_3 = Instance.new("UIPadding")
+		padding_3.Parent = content
+		padding_3.PaddingLeft = UDim.new(0, 7)
+		padding_3.PaddingRight = UDim.new(0, 7)
+
+		local list_layout_2 = Instance.new("UIListLayout")
+		list_layout_2.Parent = content
+		list_layout_2.FillDirection = Enum.FillDirection.Horizontal
+		list_layout_2.SortOrder = Enum.SortOrder.LayoutOrder
+		list_layout_2.VerticalAlignment = Enum.VerticalAlignment.Top
+		list_layout_2.Padding = UDim.new(0, 7)
+		
+		local title = Instance.new("TextLabel")
+		title.Parent = title_bar
+		title.Name = "Title"
+		title.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		title.BackgroundTransparency = 1.000
+		title.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		title.BorderSizePixel = 0
+		title.Size = UDim2.new(1, 0, 1, 0)
+		title.Font = Enum.Font.MontserratMedium
+		title.Text = self.title
+		title.TextColor3 = Color3.fromRGB(206, 206, 206)
+		title.TextSize = 14
+		title.TextXAlignment = Enum.TextXAlignment.Left
+		title.TextYAlignment = Enum.TextYAlignment.Center
+		
+		self:_StoreConn(close_btn_img.MouseButton1Click:Once(function() 
+			self:_Destroy()
+		end))
+
+		self.title_bar = title_bar
+		self.content = content
+	end
+end
+
+local settings_class = table.create(8)
+settings_class.__index = settings_class
+
+do
+	function settings_class:_InjectIcon(parent, setting)
+		if self.setting_icon then return end
+		
+		self.callback = setting.Callback
+		
+		local setting_icon = Instance.new("ImageButton")
+		setting_icon.Parent = parent
+		setting_icon.Name = "Setting"
+		setting_icon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		setting_icon.BackgroundTransparency = 1.000
+		setting_icon.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		setting_icon.BorderSizePixel = 0
+		setting_icon.Size = UDim2.new(1, 0, 1, 0)
+		setting_icon.Image = "rbxassetid://1402032193"
+		
+		local ratio = Instance.new("UIAspectRatioConstraint")
+		ratio.Parent = setting_icon
+		
+		setting_icon.MouseButton1Click:Connect(function()
+			self:callback()
+		end)
+		
+		self.setting_icon = setting_icon
+	end
+end
 
 core_ui_manager = {} do
 	function core_ui_manager:Init()
@@ -2363,7 +2612,7 @@ core_ui_manager = {} do
 			safe_gui.Name = "ZYVIX"
 			safe_gui.ResetOnSpawn = false
 			safe_gui.IgnoreGuiInset = true
-			safe_gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+			safe_gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 			self.safe_gui = safe_gui
 		else
 			print("Critical error: no suitable parent found")
@@ -2499,6 +2748,23 @@ core_ui_manager = {} do
 		group_obj:_CreateGroupContent(parent, setting)
 
 		return group_obj
+	end
+	
+	function core_ui_manager:coreCreatePopup(parent, setting)
+		local pop_up_obj = setmetatable({}, pop_up_class)
+		pop_up_obj.stored_conn = {}
+		
+		pop_up_obj:_CreatePopup(parent, setting)
+		pop_up_obj:_CreateTitleBar()
+		
+		return pop_up_obj
+	end
+	function core_ui_manager:coreInjectSetting(parent, setting)
+		local setting_obj = setmetatable({}, settings_class)
+
+		setting_obj:_InjectIcon(parent, setting)
+
+		return setting_obj
 	end
 end
 
@@ -2755,6 +3021,35 @@ ZYVIX:InjectElement("Keybind", function(parent, setting)
 
 	return keybind_obj
 end)
+
+ZYVIX:InjectElement("MiniWindow", function(parent, setting)
+	setting = helper_functions:SetConfig({
+		Title = "nil"
+	}, setting)	
+	
+	local pop_up_obj = core_ui_manager:coreCreatePopup(parent:GetContainer(), setting)
+
+	pop_up_obj._CreatePopup = nil
+	pop_up_obj._CreateTitleBar = nil
+
+	return pop_up_obj
+end)
+
+ZYVIX:InjectElement("InjectSetting", function(parent, setting)
+	setting = helper_functions:SetConfig({
+		Callback = function()
+			print("touched")
+		end,
+	}, setting)	
+
+	local setting_obj = core_ui_manager:coreInjectSetting(parent:GetBase(), setting)
+
+	setting_obj._InjectIcon = nil
+
+	return setting_obj
+end)
+
+
 
 return ZYVIX
 
