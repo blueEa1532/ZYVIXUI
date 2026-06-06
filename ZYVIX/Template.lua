@@ -52,6 +52,33 @@ e = sec:Checkbox({
 
 e:SetState(false)
 
+local wrfef = false
+
+task.spawn(function()
+	while task.wait(5) do
+		print(wrfef)
+	end
+end)
+
+e:InjectSetting({
+	Callback = function()
+		local lol = h4ck3r:MiniWindow({
+			Title = "Settings"
+		})
+
+		lol:Checkbox({
+			Label = "hey",
+			Value = true,
+			Callback = function(self, value)
+				wrfef = value
+			end,
+		})
+	end,
+})
+
+e:SetState(true)
+
+
 sec:Divider()
 
 e = sec:Dropdown({
@@ -66,7 +93,10 @@ e = sec:Dropdown({
 	end,
 })
 
+
+
 e:SetItem("option 2")
+
 
 sec:Label({Text = "hello"})
 
@@ -104,5 +134,16 @@ group:Keybind({
 		print("just look around")
 	end,
 })
+
+local group2 = CreateGroup(sec, "group 1")
+
+group2:Keybind({
+	Label = "Fly Keybind",
+	DefaultValue = Enum.KeyCode.F,
+	Callback = function(self, value)
+		print("just look around")
+	end,
+})
+
 
 task.wait(10)
