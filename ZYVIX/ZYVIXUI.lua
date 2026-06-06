@@ -1,5 +1,5 @@
 --[[
-v1.1.0
+v1.1.1
 _______________.___.____   ____._______  ___
 \____    /\__  |   |\   \ /   /|   \   \/  /
   /     /  /   |   | \   Y   / |   |\     / 
@@ -2539,7 +2539,7 @@ do
 
 		local list_layout_2 = Instance.new("UIListLayout")
 		list_layout_2.Parent = content
-		list_layout_2.FillDirection = Enum.FillDirection.Horizontal
+		list_layout_2.FillDirection = Enum.FillDirection.Vertical
 		list_layout_2.SortOrder = Enum.SortOrder.LayoutOrder
 		list_layout_2.VerticalAlignment = Enum.VerticalAlignment.Top
 		list_layout_2.Padding = UDim.new(0, 7)
