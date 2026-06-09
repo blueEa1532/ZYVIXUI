@@ -1,5 +1,5 @@
 --[[
-v1.1.1
+v1.1.2
 _______________.___.____   ____._______  ___
 \____    /\__  |   |\   \ /   /|   \   \/  /
   /     /  /   |   | \   Y   / |   |\     / 
@@ -1605,7 +1605,7 @@ do
 		value.BorderSizePixel = 0
 		value.Size = UDim2.new(0.9, 0, 1, 0)
 		value.Font = Enum.Font.Gotham
-		value.Text = self.value
+		value.Text = tostring(self.value)
 		value.TextColor3 = Color3.fromRGB(255, 255, 255)
 		value.TextScaled = true
 		value.TextSize = 14.000
