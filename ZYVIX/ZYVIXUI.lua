@@ -1429,8 +1429,10 @@ do
 	function dropdown_class:_ChangeItem(value)
 		if not self.Itemlist_container then return end
 
-		self.Itemlist_container.value.Text = value
-		self.value = value
+		local str = (value and tostring(value)) or "NIL"
+
+		self.Itemlist_container.value.Text = str
+		self.value = str
 
 		if self.callback then
 			self:callback(value)
@@ -1445,7 +1447,7 @@ do
 		for i, str in ipairs(self.items) do
 			local item_container = Instance.new("TextButton")
 			item_container.Parent = self.Itemlist
-			item_container.Name = str
+			item_container.Name = tostring(str)
 			item_container.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 			item_container.BackgroundTransparency = 1.000
 			item_container.BorderColor3 = Color3.fromRGB(0, 0, 0)
@@ -1482,7 +1484,7 @@ do
 			item_label.BorderSizePixel = 0
 			item_label.Size = UDim2.new(0.9, 0, 1, 0)
 			item_label.Font = Enum.Font.MontserratMedium
-			item_label.Text = str
+			item_label.Text = tostring(str)
 			item_label.TextColor3 = Color3.fromRGB(255, 255, 255)
 			item_label.TextSize = 14.000
 
