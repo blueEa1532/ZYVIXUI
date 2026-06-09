@@ -1015,7 +1015,8 @@ do
 		local button_container = Instance.new("Frame")
 		button_container.Parent = parent
 		button_container.Name = "Button"
-		button_container.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		button_container.BackgroundColor3 = Color3.fromRGB(21, 46, 54)
+		button_container.BackgroundTransparency = 0.350
 		button_container.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		button_container.BorderSizePixel = 0
 		button_container.Size = UDim2.new(0.5, 0, 0, 20)
@@ -1028,10 +1029,23 @@ do
 		corner_radius.Parent = button_container
 		corner_radius.CornerRadius = UDim.new(0, 6)
 
+		local stroke = Instance.new("UIStroke")
+		stroke.Parent = button_container
+		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		stroke.Color = Color3.fromRGB(255, 255, 255)
+		
 		local gradient = Instance.new("UIGradient")
-		gradient.Parent = button_container
-		gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(54, 103, 148)), ColorSequenceKeypoint.new(0.48, Color3.fromRGB(155, 207, 255)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(54, 103, 148))}
-		gradient.Rotation = 90
+		gradient.Parent = stroke
+		gradient.Transparency = NumberSequence.new{
+			NumberSequenceKeypoint.new(0.00, 0.00), 
+			NumberSequenceKeypoint.new(0.51, 1.00), 
+			NumberSequenceKeypoint.new(1.00, 0.00)
+		}
+		gradient.Color = ColorSequence.new{
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(68, 126, 139)), 
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(68, 126, 139))
+		}
+		gradient.Rotation = 86
 
 		local label = Instance.new("TextLabel")
 		label.Parent = button_container
