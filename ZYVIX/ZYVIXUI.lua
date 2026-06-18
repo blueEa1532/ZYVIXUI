@@ -1,5 +1,5 @@
 --[[
-v1.1.2
+v1.2.0
 _______________.___.____   ____._______  ___
 \____    /\__  |   |\   \ /   /|   \   \/  /
   /     /  /   |   | \   Y   / |   |\     / 
@@ -106,7 +106,7 @@ do
 	function main_window_class:GetBase()
 		return self.window_content
 	end
-	
+
 	function main_window_class:GetContainer()
 		return self.window_base
 	end
@@ -213,7 +213,7 @@ do
 		window_frame.AnchorPoint = Vector2.new(0.5, 0)
 		window_frame.Position = pos
 		window_frame.Size = size
-		
+
 		local image_label = Instance.new("ImageLabel")
 		image_label.Parent = window_frame
 		image_label.Name = "Eye"
@@ -262,11 +262,23 @@ do
 		list_layout.SortOrder = Enum.SortOrder.LayoutOrder
 		list_layout.Parent = canvas_group
 
-		local border_stroke = Instance.new("UIStroke")
-		border_stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-		border_stroke.Thickness = 1
-		border_stroke.Color = Color3.fromRGB(157, 157, 157)
-		border_stroke.Parent = canvas_group
+		local stroke = Instance.new("UIStroke")
+		stroke.Parent = canvas_group
+		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		stroke.Color = Color3.fromRGB(255, 255, 255)
+
+		local gradient = Instance.new("UIGradient")
+		gradient.Parent = stroke
+		gradient.Transparency = NumberSequence.new{
+			NumberSequenceKeypoint.new(0.00, 0.00), 
+			NumberSequenceKeypoint.new(0.51, 1.00), 
+			NumberSequenceKeypoint.new(1.00, 0.00)
+		}
+		gradient.Color = ColorSequence.new{
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(68, 126, 139)), 
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(68, 126, 139))
+		}
+		gradient.Rotation = 86
 
 		local main_frame = Instance.new("Frame")
 		main_frame.Name = "main_frame"
@@ -591,40 +603,68 @@ do
 		parent = ensure_funcs:IsValidInstance(parent)
 		if not parent then return end
 
-		title = tostring(title) or "Nil"
-		icon_id = tostring(icon_id) or "rbxassetid://73132811772878"
+		title = (title and tostring(title)) or "Nil"
+		icon_id = (icon_id and tostring(icon_id)) or "rbxassetid://73132811772878"
 
 		local tab_container = Instance.new("Frame")
 		tab_container.Name = tostring(title)
 		tab_container.Parent = parent
 		tab_container.AnchorPoint = Vector2.new(0.5, 0)
-		tab_container.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-		tab_container.BackgroundTransparency = 0.8
+		tab_container.BackgroundColor3 = Color3.fromRGB(21, 46, 54)
+		tab_container.BackgroundTransparency = 0.800
 		tab_container.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		tab_container.BorderSizePixel = 0
 		tab_container.Position = UDim2.new(0.5, 0, -0.001, 0)
 		tab_container.Size = UDim2.new(0.9, 0, 0.04, 0)
-
-		local corner = Instance.new("UICorner")
-		corner.Parent = tab_container
-
-		local padding = Instance.new("UIPadding")
-		padding.Parent = tab_container
-		padding.PaddingLeft = UDim.new(0, 5)
+		
+		local glow = Instance.new("ImageLabel")
+		glow.Active = false
+		glow.Name = "glow"
+		glow.Parent = tab_container
+		glow.AnchorPoint = Vector2.new(0.5, 0.5)
+		glow.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		glow.BackgroundTransparency = 1.000
+		glow.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		glow.BorderSizePixel = 0
+		glow.Position = UDim2.new(0.5, 0, 0.5, 0)
+		glow.Size = UDim2.new(2, 0, 2, 0)
+		glow.ZIndex = -1
+		glow.Image = "rbxassetid://5538771868"
+		glow.ImageColor3 = Color3.fromRGB(121, 230, 255)
+		glow.ImageTransparency = 1.000
+		
+		local content_frame = Instance.new("CanvasGroup")
+		content_frame.Parent = tab_container
+		content_frame.BackgroundTransparency = 1
+		content_frame.Size = UDim2.new(1, 0, 1, 0)
 
 		local stroke = Instance.new("UIStroke")
-		stroke.Parent = tab_container
-		stroke.Color = Color3.fromRGB(172, 172, 172)
-		stroke.Thickness = 0.5
-		stroke.Transparency = 0.5
-
+		stroke.Parent = content_frame
+		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		stroke.Color = Color3.fromRGB(255, 255, 255)
+		
 		local gradient = Instance.new("UIGradient")
-		gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(33, 80, 189)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(103, 252, 255))}
-		gradient.Transparency = NumberSequence.new{NumberSequenceKeypoint.new(0.00, 0.50), NumberSequenceKeypoint.new(1.00, 0.50)}
-		gradient.Parent = tab_container
+		gradient.Parent = stroke
+		gradient.Transparency = NumberSequence.new{
+			NumberSequenceKeypoint.new(0.00, 0.00), 
+			NumberSequenceKeypoint.new(0.51, 1.00), 
+			NumberSequenceKeypoint.new(1.00, 0.00)
+		}
+		gradient.Color = ColorSequence.new{
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(68, 126, 139)), 
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(68, 126, 139))
+		}
+		gradient.Rotation = 77
+
+		local corner = Instance.new("UICorner")
+		corner.Parent = content_frame
+
+		local padding = Instance.new("UIPadding")
+		padding.Parent = content_frame
+		padding.PaddingLeft = UDim.new(0, 5)
 
 		local main_button = Instance.new("TextButton")
-		main_button.Parent = tab_container
+		main_button.Parent = content_frame
 		main_button.Name = "Button"
 		main_button.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 		main_button.BackgroundTransparency = 1.000
@@ -638,7 +678,7 @@ do
 
 
 		local title_container = Instance.new("Frame")
-		title_container.Parent = tab_container
+		title_container.Parent = content_frame
 		title_container.Name = "TextContainer"
 		title_container.AnchorPoint = Vector2.new(1, 0.5)
 		title_container.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -657,7 +697,7 @@ do
 		text_label.BorderSizePixel = 0
 		text_label.LayoutOrder = 2
 		text_label.Size = UDim2.new(1, 0, 1, 0)
-		text_label.Font = Enum.Font.SourceSansBold
+		text_label.Font = Enum.Font.MontserratMedium
 		text_label.Text = title
 		text_label.TextColor3 = Color3.fromRGB(255, 255, 255)
 		text_label.TextSize = 20.000
@@ -665,7 +705,7 @@ do
 		text_label.TextXAlignment = Enum.TextXAlignment.Left
 
 		local icon = Instance.new("ImageLabel")
-		icon.Parent = tab_container
+		icon.Parent = content_frame
 		icon.Name = "Icon"
 		icon.AnchorPoint = Vector2.new(0, 0.5)
 		icon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -688,6 +728,7 @@ do
 		end))
 
 		self.tab = tab_container
+		self.content_frame = content_frame
 	end
 
 	function tab_creator_class:_CreateComponentContent(parent)
@@ -755,13 +796,16 @@ do
 		tab_obj:Callback(function()
 			self:_SetActiveTab(current_index)
 		end)
-
+		
 		return tab_obj
 	end
 
 	function tab_list_class:_SetActiveTab(index)
 		local selected_tab = self.tabs[index]
-		if not selected_tab then warn("err") return end
+		if not selected_tab then return end
+		
+		local tween_info = TweenInfo.new(
+			0.25, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
 
 		if self.active_tab_index and self.active_tab_index ~= index then
 			local active_tab = self.tabs[self.active_tab_index]
@@ -769,9 +813,12 @@ do
 
 			local active_content = active_tab.tab
 
-			tween_service:Create(active_content, TweenInfo.new(
-				0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+			tween_service:Create(active_content, tween_info, {
 					BackgroundTransparency = 0.8
+				}):Play()
+			
+			tween_service:Create(active_content.glow, tween_info, {
+					ImageTransparency = 1
 				}):Play()
 
 			active_tab.content_container.Visible = false
@@ -781,9 +828,13 @@ do
 		selected_tab.content_container.Visible = true
 		local content = selected_tab.tab
 
-		tween_service:Create(content, universal_tween, {
-			BackgroundTransparency = 0.2
+		tween_service:Create(content, tween_info, {
+			BackgroundTransparency = 0.350
 		}):Play()
+		
+		tween_service:Create(content.glow, tween_info, {
+				ImageTransparency = 0.9
+			}):Play()
 
 		self.active_tab_index = index
 	end
@@ -794,7 +845,7 @@ do
 		local container_frame = Instance.new("Frame")
 		container_frame.Parent = parent
 		container_frame.Name = "Tablist"
-		container_frame.BackgroundColor3 = Color3.fromRGB(129, 129, 129)
+		container_frame.BackgroundColor3 = Color3.fromRGB(21, 46, 54)
 		container_frame.BackgroundTransparency = 0.300
 		container_frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		container_frame.BorderSizePixel = 0
@@ -870,10 +921,110 @@ do
 
 		list_layout:Clone().Parent = top_section
 		padding:Clone().Parent = top_section
+		
+		self.collapsed = false
 
 		self.tab_content = content_frame
 		self.tab_list = scrolling_frame
 		self.top_section = top_section
+	end
+	
+	function tab_list_class:CollapseTablist()
+		if self.collapsed then return end
+		
+		if not self.component_container then return end
+		if not self.tab_container then return end
+		
+		local close_tween = tween_service:Create(self.tab_container, universal_tween, {Size = UDim2.new(0.046, 0, 0.97, 0)})
+		close_tween:Play()
+		
+		tween_service:Create(self.component_container, universal_tween, {Size = UDim2.new(0.945, 0, 0.95, 0)}):Play()
+		
+		close_tween.Completed:Wait()
+		
+		self.collapsed = true
+	end
+	
+	function tab_list_class:ExpandTablist()
+		if not self.collapsed then return end
+		
+		if not self.component_container then return end
+		if not self.tab_container then return end
+
+		local close_tween = tween_service:Create(self.tab_container, universal_tween, {Size = UDim2.new(0.181, 0, 0.97, 0)})
+		close_tween:Play()
+		
+		tween_service:Create(self.component_container, universal_tween, {Size = UDim2.new(0.81, 0, 0.95, 0)}):Play()
+		
+		close_tween.Completed:Wait()
+		
+		self.collapsed = false
+	end
+	
+	function tab_list_class:ToggleCollapse()
+		if self.collapsed then
+			self:ExpandTablist()
+		else
+			self:CollapseTablist()
+		end
+	end
+	
+	function tab_list_class:_CreateMenuBtn()
+		if not self.top_section then return end
+		
+		local menu_frame = Instance.new("Frame")
+		menu_frame.Parent = self.top_section
+		menu_frame.Name = "Menu"
+		menu_frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		menu_frame.BackgroundTransparency = 1.000
+		menu_frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		menu_frame.BorderSizePixel = 0
+		menu_frame.Size = UDim2.new(1, 0, 0, 30)
+		
+		local menu_btn = Instance.new("ImageButton")
+		menu_btn.Name = "MenuBtn"
+		menu_btn.Parent = menu_frame
+		menu_btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		menu_btn.BackgroundTransparency = 1.000
+		menu_btn.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		menu_btn.BorderSizePixel = 0
+		menu_btn.Size = UDim2.new(0, 30, 0, 30)
+		menu_btn.Image = "rbxassetid://4773248567"
+		
+		local label_frame = Instance.new("Frame")
+		label_frame.Name = "Text"
+		label_frame.Parent = menu_frame
+		label_frame.AnchorPoint = Vector2.new(0.5, 0.5)
+		label_frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		label_frame.BackgroundTransparency = 1.000
+		label_frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		label_frame.BorderSizePixel = 0
+		label_frame.Position = UDim2.new(0.5, 15, 0.5, 0)
+		label_frame.Size = UDim2.new(1.1, -40, 1, 0)
+		
+		local label = Instance.new("TextLabel")
+		label.Name = "Label"
+		label.Parent = label_frame
+		label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		label.BackgroundTransparency = 1.000
+		label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		label.BorderSizePixel = 0
+		label.Size = UDim2.new(1, 0, 1, 0)
+		label.Font = Enum.Font.GothamBold
+		label.Text = "Menu"
+		label.TextColor3 = Color3.fromRGB(255, 255, 255)
+		label.TextSize = 20.000
+		label.TextStrokeColor3 = Color3.fromRGB(255, 255, 255)
+		label.TextXAlignment = Enum.TextXAlignment.Left
+		
+		local padding = Instance.new("UIPadding")
+		padding.Parent = label_frame
+		padding.PaddingLeft = UDim.new(0, 8)
+		
+		menu_btn.MouseButton1Click:Connect(function()
+			self:ToggleCollapse()
+		end)
+		
 	end
 
 	function tab_list_class:_InitContent(parent)
@@ -1033,7 +1184,7 @@ do
 		stroke.Parent = button_container
 		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 		stroke.Color = Color3.fromRGB(255, 255, 255)
-		
+
 		local gradient = Instance.new("UIGradient")
 		gradient.Parent = stroke
 		gradient.Transparency = NumberSequence.new{
@@ -1145,7 +1296,7 @@ do
 		self:_SetValue(boolean)
 		return self
 	end
-	
+
 	function checkbox_class:GetBase()
 		return self.checkbox_container
 	end
@@ -1382,7 +1533,11 @@ do
 	end
 
 	function dropdown_class:_StoreConn(conn)
-		return helper_functions:_StoreConn(conn)
+		return helper_functions:_StoreConn(self.stored_conn, conn)
+	end
+	
+	function dropdown_class:_StoreInstances(conn)
+		return helper_functions:_StoreConn(self.stored_items, conn)
 	end
 
 	function dropdown_class:_Clear()
@@ -1439,10 +1594,8 @@ do
 		self.Itemlist.Visible = true
 		self.hidden = false
 	end
-
-	function dropdown_class:_ChangeItem(value)
-		if not self.Itemlist_container then return end
-
+	
+	function dropdown_class:_SelectItem(value)
 		local str = (value and tostring(value)) or "NIL"
 
 		self.Itemlist_container.value.Text = str
@@ -1452,39 +1605,101 @@ do
 			self:callback(value)
 		end
 	end
+	
+	function dropdown_class:_AddItem(value, index)		
+		local str = (value and tostring(value)) or "NIL"
+		
+		local item = table.find(self.multi, str)
+		
+		local obj = self.Itemlist:FindFirstChild(str)
+				
+		if item then
+			table.remove(self.multi, item)
+		else
+			table.insert(self.multi, str)
+		end
+		
+		
+		if obj then
+			obj.BackgroundTransparency = item and 0.800 or 0.350
+		end
+		
+		self.Itemlist_container.value.Text = table.concat(self.multi, ", ")
+		self.value = self.multi
+		
+		if self.callback then
+			self:callback(self.value)
+		end
+	end
+
+	function dropdown_class:_ChangeItem(value, index)
+		if not self.Itemlist_container then return end
+		
+		if self.multi then
+			self:_AddItem(value, index)
+		else
+			self:Hide()
+			self:_SelectItem(value)
+		end
+	end
 
 	function dropdown_class:_RefreshList()
 		if not self.Itemlist then return end
-
+		
+		for _, conn in ipairs(self.stored_items) do
+			if not conn then continue end
+			
+			conn = helper_functions:DisconnectConn(conn)
+		end
+		
 		self:_Clear()
 
 		for i, str in ipairs(self.items) do
+			local image_id = (self.image_order[i] and tostring(self.image_order[i])) or "rbxasset://textures/ui/GuiImagePlaceholder.png"
+			
+			local local_transparency = (self.multi and table.find(self.multi, str)) and 0.350 or 0.800
+			
 			local item_container = Instance.new("TextButton")
 			item_container.Parent = self.Itemlist
 			item_container.Name = tostring(str)
-			item_container.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-			item_container.BackgroundTransparency = 1.000
+			item_container.BackgroundColor3 = Color3.fromRGB(21, 46, 54)
+			item_container.BackgroundTransparency = local_transparency
 			item_container.BorderColor3 = Color3.fromRGB(0, 0, 0)
 			item_container.BorderSizePixel = 0
-			item_container.Size = UDim2.new(1, 0, 0, 20)
+			item_container.Size = UDim2.new(1, 0, 0, 30)
 			item_container.Font = Enum.Font.MontserratMedium
 			item_container.Text = ""
 			item_container.TextColor3 = Color3.fromRGB(255, 255, 255)
 			item_container.TextSize = 14.000
-
+			
 			local stroke = Instance.new("UIStroke")
 			stroke.Parent = item_container
-			stroke.Color = Color3.fromRGB(0,0,0)
+			stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+			stroke.Color = Color3.fromRGB(255, 255, 255)
+
+			local gradient = Instance.new("UIGradient")
+			gradient.Parent = stroke
+			gradient.Transparency = NumberSequence.new{
+				NumberSequenceKeypoint.new(0.00, 0.00), 
+				NumberSequenceKeypoint.new(0.51, 1.00), 
+				NumberSequenceKeypoint.new(1.00, 0.00)
+			}
+			gradient.Color = ColorSequence.new{
+				ColorSequenceKeypoint.new(0, Color3.fromRGB(68, 126, 139)), 
+				ColorSequenceKeypoint.new(1, Color3.fromRGB(68, 126, 139))
+			}
+			gradient.Rotation = 77
 
 			local icon = Instance.new("ImageLabel")
 			icon.Parent = item_container
 			icon.AnchorPoint = Vector2.new(1, 0)
 			icon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			icon.BackgroundTransparency = 1
 			icon.BorderColor3 = Color3.fromRGB(0, 0, 0)
 			icon.BorderSizePixel = 0
 			icon.Position = UDim2.new(1, 0, 0, 0)
 			icon.Size = UDim2.new(1, 0, 1, 0)
-			icon.Image = self.image_order[i] or "rbxasset://textures/ui/GuiImagePlaceholder.png"
+			icon.Image = image_id
 
 			local ratio = Instance.new("UIAspectRatioConstraint")
 			ratio.Parent = icon
@@ -1502,9 +1717,8 @@ do
 			item_label.TextColor3 = Color3.fromRGB(255, 255, 255)
 			item_label.TextSize = 14.000
 
-			self:_StoreConn(item_container.MouseButton1Click:Once(function()
-				self:Hide()
-				self:_ChangeItem(str)
+			self:_StoreInstances(item_container.MouseButton1Click:Connect(function()
+				self:_ChangeItem(str, i)
 			end))
 		end
 	end
@@ -1515,6 +1729,7 @@ do
 		self.items = setting["Items"]
 		self.value = type(setting.selected) == "number" and self.items[setting.selected] or setting.selected
 		self.image_order = setting["image"]
+		self.multi = setting.MultiSelectable and {} or false
 
 		local dropdown_container = Instance.new("Frame")
 		dropdown_container.Parent = parent
@@ -1524,7 +1739,7 @@ do
 		dropdown_container.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		dropdown_container.BorderSizePixel = 0
 		dropdown_container.ZIndex = 4
-		dropdown_container.Size = UDim2.new(0.7, 0, 0, 20)
+		dropdown_container.Size = UDim2.new(1, 0, 0, 30)
 
 		dropdown_container.Destroying:Once(function()
 			self:_Destroy()
@@ -1776,13 +1991,14 @@ do
 		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 		stroke.Thickness = 0.5
 		stroke.Color = Color3.fromRGB(24, 44, 48)
-
-		self.input_box_container = inputbox_container
+		
+		self.input_box_outer_frame = inputbox_container
+		self.input_box_container = content_frame
 	end
 
 	function input_text_class:_CreateInputBox()
 		if self.inputbox_frame then return end
-		if not self.input_box_container then return end
+		if not self.input_box_outer_frame then return end
 
 		local inputbox_frame = Instance.new("Frame")
 		inputbox_frame.Parent = self.input_box_container
@@ -1819,6 +2035,7 @@ do
 		local gradient = Instance.new("UIGradient")
 		gradient.Parent = inputbox_frame
 		gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(10, 14, 24)), ColorSequenceKeypoint.new(0.49, Color3.fromRGB(0, 0, 0)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(10, 14, 24))}
+		
 
 		local inputbox = Instance.new("TextBox")
 		inputbox.Parent = inputbox_frame
@@ -1834,6 +2051,7 @@ do
 		inputbox.Text = self.value
 		inputbox.TextColor3 = Color3.fromRGB(255, 255, 255)
 		inputbox.TextSize = 14.000
+		inputbox.ClipsDescendants = true
 
 		self:_StoreConn(inputbox:GetPropertyChangedSignal("Text"):Connect(function()
 			if not self.state then
@@ -2391,15 +2609,15 @@ pop_up_class.__index = pop_up_class
 setmetatable(pop_up_class, { __index = container_base })
 
 do
-	
+
 	function pop_up_class:GetBase()
 		return self.content
 	end
-	
+
 	function pop_up_class:_StoreConn(conn)
 		return helper_functions:_StoreConn(self.stored_conn, conn)
 	end
-	
+
 	function pop_up_class:_Destroy()
 		if not self or self.Destroyed then return end
 		self.Destroyed = true
@@ -2422,10 +2640,11 @@ do
 	end
 
 	function pop_up_class:_CreatePopup(parent, setting)
+		if parent:FindFirstChild("popup_window") then return end
 		if self.popup_window then return end
-		
+
 		self.title = setting.Title 
-		
+
 		local popup_window = Instance.new("Frame")
 		popup_window.Name = "popup_window"
 		popup_window.Parent = parent
@@ -2439,15 +2658,15 @@ do
 		popup_window.Position = UDim2.new(0.5, 0, 0.5, 0)
 		popup_window.Size = UDim2.new(0.5, 0, 0.5, 0)
 		popup_window.ZIndex = 3
-		
+
 		local corner_radius = Instance.new("UICorner")
 		corner_radius.Parent = popup_window
-		
+
 		local stroke = Instance.new("UIStroke")
 		stroke.Parent = popup_window
 		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 		stroke.Color = Color3.fromRGB(255, 255, 255)
-		
+
 		local gradient = Instance.new("UIGradient")
 		gradient.Parent = stroke
 		gradient.Transparency = NumberSequence.new{
@@ -2460,10 +2679,10 @@ do
 			ColorSequenceKeypoint.new(1, Color3.fromRGB(68, 126, 139))
 		}
 		gradient.Rotation = 60
-		
+
 		self.popup_window = popup_window
 	end
-	
+
 	function pop_up_class:_CreateTitleBar()
 		if self.title_bar then return end
 		if not self.popup_window then return end
@@ -2559,7 +2778,7 @@ do
 		list_layout_2.SortOrder = Enum.SortOrder.LayoutOrder
 		list_layout_2.VerticalAlignment = Enum.VerticalAlignment.Top
 		list_layout_2.Padding = UDim.new(0, 7)
-		
+
 		local title = Instance.new("TextLabel")
 		title.Parent = title_bar
 		title.Name = "Title"
@@ -2574,7 +2793,7 @@ do
 		title.TextSize = 14
 		title.TextXAlignment = Enum.TextXAlignment.Left
 		title.TextYAlignment = Enum.TextYAlignment.Center
-		
+
 		self:_StoreConn(close_btn_img.MouseButton1Click:Once(function() 
 			self:_Destroy()
 		end))
@@ -2590,9 +2809,9 @@ settings_class.__index = settings_class
 do
 	function settings_class:_InjectIcon(parent, setting)
 		if self.setting_icon then return end
-		
+
 		self.callback = setting.Callback
-		
+
 		local setting_icon = Instance.new("ImageButton")
 		setting_icon.Parent = parent
 		setting_icon.Name = "Setting"
@@ -2602,14 +2821,14 @@ do
 		setting_icon.BorderSizePixel = 0
 		setting_icon.Size = UDim2.new(1, 0, 1, 0)
 		setting_icon.Image = "rbxassetid://1402032193"
-		
+
 		local ratio = Instance.new("UIAspectRatioConstraint")
 		ratio.Parent = setting_icon
-		
+
 		setting_icon.MouseButton1Click:Connect(function()
 			self:callback()
 		end)
-		
+
 		self.setting_icon = setting_icon
 	end
 end
@@ -2668,6 +2887,7 @@ core_ui_manager = {} do
 		tablist_obj:_CreateContainer(parent)
 		tablist_obj:_InitContent(parent)
 		tablist_obj:_CreateContent()
+		tablist_obj:_CreateMenuBtn()
 
 		return tablist_obj
 	end
@@ -2705,6 +2925,7 @@ core_ui_manager = {} do
 	function core_ui_manager:coreCreateDropdown(parent, setting)
 		local dropdown_obj = setmetatable({}, dropdown_class)
 		dropdown_obj.stored_conn = {}
+		dropdown_obj.stored_items = {}
 
 		dropdown_obj:_CreateDropDownContainer(parent, setting)
 		dropdown_obj:_CreateDropdownItemList()
@@ -2765,14 +2986,14 @@ core_ui_manager = {} do
 
 		return group_obj
 	end
-	
+
 	function core_ui_manager:coreCreatePopup(parent, setting)
 		local pop_up_obj = setmetatable({}, pop_up_class)
 		pop_up_obj.stored_conn = {}
-		
+
 		pop_up_obj:_CreatePopup(parent, setting)
 		pop_up_obj:_CreateTitleBar()
-		
+
 		return pop_up_obj
 	end
 	function core_ui_manager:coreInjectSetting(parent, setting)
@@ -2877,6 +3098,7 @@ ZYVIX:InjectElement("Tablist", function(parent)
 
 	tab_list_main._CreateContainer = nil
 	tab_list_main._CreateContent = nil
+	tab_list_main._CreateMenuBtn = nil
 
 	return tab_list_main
 end)
@@ -2944,6 +3166,7 @@ ZYVIX:InjectElement("Dropdown", function(parent, setting)
 			[2] = "rbxassetid://6319951718"
 		},
 		selected = 1,
+		MultiSelectable = false,
 		Callback = function(self, value)
 			print("selected:", value)
 		end,
@@ -3042,7 +3265,7 @@ ZYVIX:InjectElement("MiniWindow", function(parent, setting)
 	setting = helper_functions:SetConfig({
 		Title = "nil"
 	}, setting)	
-	
+
 	local pop_up_obj = core_ui_manager:coreCreatePopup(parent:GetContainer(), setting)
 
 	pop_up_obj._CreatePopup = nil
