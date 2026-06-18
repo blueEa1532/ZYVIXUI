@@ -1671,6 +1671,7 @@ do
 			item_container.Text = ""
 			item_container.TextColor3 = Color3.fromRGB(255, 255, 255)
 			item_container.TextSize = 14.000
+			item_container.ZIndex = 26
 			
 			local stroke = Instance.new("UIStroke")
 			stroke.Parent = item_container
@@ -1716,6 +1717,7 @@ do
 			item_label.Text = tostring(str)
 			item_label.TextColor3 = Color3.fromRGB(255, 255, 255)
 			item_label.TextSize = 14.000
+			item_label.ZIndex = 27
 
 			self:_StoreInstances(item_container.MouseButton1Click:Connect(function()
 				self:_ChangeItem(str, i)
@@ -1857,6 +1859,7 @@ do
 		item_list.Visible = false
 		item_list.Position = UDim2.new(0, 0, 0.8, 0)
 		item_list.Size = UDim2.new(1, 0, 0, 0)
+		item_list.ZIndex = 25
 
 
 		corner_radius:Clone().Parent = item_list
@@ -2137,7 +2140,9 @@ It's a bit more complicated
 2: find a way how to make it move
 
 
+next steps:
 
+add input box support
 
 ]]
 
@@ -2847,7 +2852,7 @@ core_ui_manager = {} do
 			safe_gui.Name = "ZYVIX"
 			safe_gui.ResetOnSpawn = false
 			safe_gui.IgnoreGuiInset = true
-			safe_gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+			safe_gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
 			self.safe_gui = safe_gui
 		else
 			print("Critical error: no suitable parent found")
