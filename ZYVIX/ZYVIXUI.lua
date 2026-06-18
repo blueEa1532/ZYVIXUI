@@ -1849,18 +1849,22 @@ do
 		text_size_ratio.MinTextSize = 1
 		text_size_ratio.MaxTextSize = 14
 
-		local item_list = Instance.new("Frame")
+		local item_list = Instance.new("ScrollingFrame")
 		item_list.Name = "ItemList"
 		item_list.Parent = itemlist_container
 		item_list.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 		item_list.BorderColor3 = Color3.fromRGB(0, 0, 0)
-		item_list.AutomaticSize = Enum.AutomaticSize.Y
 		item_list.BorderSizePixel = 0
 		item_list.Visible = false
 		item_list.Position = UDim2.new(0, 0, 0.8, 0)
-		item_list.Size = UDim2.new(1, 0, 0, 0)
+		item_list.Size = UDim2.new(1, 0, 0, 200)
 		item_list.ZIndex = 25
-
+		item_list.BottomImage = ""
+		item_list.MidImage = ""
+		item_list.TopImage = ""
+		item_list.ScrollBarThickness = 0
+		item_list.AutomaticCanvasSize = Enum.AutomaticSize.Y
+		item_list.ScrollingDirection = Enum.ScrollingDirection.Y
 
 		corner_radius:Clone().Parent = item_list
 		gradient:Clone().Parent = item_list
@@ -1872,6 +1876,7 @@ do
 		local padding_2 = Instance.new("UIPadding")
 		padding_2.Parent = item_list
 		padding_2.PaddingTop = UDim.new(0, 10)
+		
 
 		self.arrow_icon = arrow_icon
 		self.Itemlist_container = itemlist_container
