@@ -1,5 +1,5 @@
 --[[
-v1.2.1
+v1.2.2
 _______________.___.____   ____._______  ___
 \____    /\__  |   |\   \ /   /|   \   \/  /
   /     /  /   |   | \   Y   / |   |\     / 
@@ -2857,7 +2857,7 @@ core_ui_manager = {} do
 			safe_gui.Name = "ZYVIX"
 			safe_gui.ResetOnSpawn = false
 			safe_gui.IgnoreGuiInset = true
-			safe_gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+			safe_gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 			self.safe_gui = safe_gui
 		else
 			print("Critical error: no suitable parent found")
