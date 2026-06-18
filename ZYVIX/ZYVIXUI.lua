@@ -1,5 +1,5 @@
 --[[
-v1.2.0
+v1.2.1
 _______________.___.____   ____._______  ___
 \____    /\__  |   |\   \ /   /|   \   \/  /
   /     /  /   |   | \   Y   / |   |\     / 
@@ -1993,7 +1993,7 @@ do
 		stroke.Color = Color3.fromRGB(24, 44, 48)
 		
 		self.input_box_outer_frame = inputbox_container
-		self.input_box_container = content_frame
+		self.input_box_container = inputbox_container
 	end
 
 	function input_text_class:_CreateInputBox()
