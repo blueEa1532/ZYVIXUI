@@ -1,5 +1,5 @@
 --[[
-v1.2.2
+v1.3.0
 _______________.___.____   ____._______  ___
 \____    /\__  |   |\   \ /   /|   \   \/  /
   /     /  /   |   | \   Y   / |   |\     / 
@@ -105,6 +105,10 @@ do
 
 	function main_window_class:GetBase()
 		return self.window_content
+	end
+	
+	function main_window_class:GetNotificationContainer()
+		return self.notification_container
 	end
 
 	function main_window_class:GetContainer()
@@ -237,6 +241,36 @@ do
 		self.window_pos_ex = window_frame.Position
 		self.window_size_ex = window_frame.Size
 		self.setting = setting
+	end
+	
+	function main_window_class:_CreateNotificationContainer(parent)
+		if self.notification_container then return end
+		
+		local notification_container = Instance.new("Frame")
+		notification_container.Parent = parent
+		notification_container.Name = "Notification"
+		notification_container.AnchorPoint = Vector2.new(1, 1)
+		notification_container.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		notification_container.BackgroundTransparency = 1.000
+		notification_container.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		notification_container.BorderSizePixel = 0
+		notification_container.Position = UDim2.new(1, 0, 1, 0)
+		notification_container.Size = UDim2.new(0.2, 0, 1, 0)
+		
+		local list_layout = Instance.new("UIListLayout")
+		list_layout.Parent = notification_container
+		list_layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+		list_layout.SortOrder = Enum.SortOrder.LayoutOrder
+		list_layout.VerticalAlignment = Enum.VerticalAlignment.Bottom
+
+		local padding = Instance.new("UIPadding")
+		padding.Parent = notification_container
+		padding.PaddingBottom = UDim.new(0, 5)
+		padding.PaddingLeft = UDim.new(0, 5)
+		padding.PaddingRight = UDim.new(0, 5)
+		padding.PaddingTop = UDim.new(0, 5)
+		
+		self.notification_container = notification_container
 	end
 
 	function main_window_class:_CreateWindowContainer()
@@ -2843,6 +2877,164 @@ do
 	end
 end
 
+local notify_class = table.create(8)
+notify_class.__index = notify_class
+
+do
+	function notify_class:_Destroy()
+		if not self or self.Destroyed then return end
+		self.Destroyed = true
+		
+		if self.notify_container then
+			self.notify_container:Destroy()
+		end
+		
+		self.notify_container = nil
+	end
+	
+	function notify_class:_CreateContainer(parent, setting)
+		if self.notify_container then return end
+		
+		self.title = setting.Title
+		self.details = setting.Description
+		self.duration = setting.Duration
+		
+		local notify_container = Instance.new("Frame")
+		notify_container.Parent = parent
+		notify_container.Name = "notify"
+		notify_container.BackgroundColor3 = Color3.fromRGB(34, 75, 88)
+		notify_container.BackgroundTransparency = 0.500
+		notify_container.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		notify_container.BorderSizePixel = 0
+		notify_container.Size = UDim2.new(1, 0, 0, 0)
+				
+		tween_service:Create(notify_container, universal_tween, {Size = UDim2.new(1, 0, 0, 100)}):Play()
+		
+		local corner_radius = Instance.new("UICorner")
+		corner_radius.CornerRadius = UDim.new(0, 6)
+		corner_radius.Parent = notify_container
+		
+		local stroke = Instance.new("UIStroke")
+		stroke.Parent = notify_container
+		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		stroke.Color = Color3.fromRGB(255, 255, 255)
+		
+		local gradient = Instance.new("UIGradient")
+		gradient.Parent = stroke
+		gradient.Transparency = NumberSequence.new{
+			NumberSequenceKeypoint.new(0.00, 0.00), 
+			NumberSequenceKeypoint.new(0.51, 1.00), 
+			NumberSequenceKeypoint.new(1.00, 0.00)
+		}
+		gradient.Color = ColorSequence.new{
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(68, 126, 139)), 
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(68, 126, 139))
+		}		gradient.Rotation = 86
+		
+		self.notify_container = notify_container
+	end
+	
+	function notify_class:_CreateContent()
+		if not self.notify_container then return end
+		
+		local glow = Instance.new("ImageLabel")
+		glow.Name = "glow"
+		glow.Parent = self.notify_container
+		glow.AnchorPoint = Vector2.new(0.5, 0.5)
+		glow.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		glow.BackgroundTransparency = 1.000
+		glow.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		glow.BorderSizePixel = 0
+		glow.Position = UDim2.new(0.5, 0, 0.5, 0)
+		glow.Size = UDim2.new(2, 0, 2, 0)
+		glow.ZIndex = -1
+		glow.Image = "rbxassetid://5538771868"
+		glow.ImageColor3 = Color3.fromRGB(121, 230, 255)
+		glow.ImageTransparency = 0.850
+
+		local title = Instance.new("TextLabel")
+		title.Name = "title"
+		title.Parent = self.notify_container
+		title.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		title.BackgroundTransparency = 1.000
+		title.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		title.BorderSizePixel = 0
+		title.Size = UDim2.new(1, 0, 0, 25)
+		title.Font = Enum.Font.Gotham
+		title.Text = self.title
+		title.TextColor3 = Color3.fromRGB(255, 255, 255)
+		title.TextSize = 16.000
+		title.TextWrapped = true
+
+		local details = Instance.new("TextLabel")
+		details.Name = "details"
+		details.Parent = self.notify_container
+		details.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		details.BackgroundTransparency = 1.000
+		details.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		details.BorderSizePixel = 0
+		details.AutomaticSize = Enum.AutomaticSize.Y
+		details.Position = UDim2.new(0, 0, 0.3, 0)
+		details.Size = UDim2.new(1, 0, 0, 0)
+		details.Font = Enum.Font.Gotham
+		details.Text = self.details
+		details.TextColor3 = Color3.fromRGB(255, 255, 255)
+		details.TextSize = 16.000
+		details.TextWrapped = true
+		details.TextXAlignment = Enum.TextXAlignment.Center
+		details.TextYAlignment = Enum.TextYAlignment.Top
+		
+		local padding = Instance.new("UIPadding")
+		padding.Parent = details
+		padding.PaddingLeft = UDim.new(0, 5)
+		padding.PaddingRight = UDim.new(0, 5)
+	end
+	
+	function notify_class:_CreateBar()
+		if not self.notify_container then return end
+		
+		local bar = Instance.new("Frame")
+		bar.Name = "Bar"
+		bar.Parent = self.notify_container
+		bar.AnchorPoint = Vector2.new(0, 1)
+		bar.BackgroundColor3 = Color3.fromRGB(21, 46, 54)
+		bar.BackgroundTransparency = 0.8
+		bar.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		bar.BorderSizePixel = 0
+		bar.Position = UDim2.new(0, 0, 1, 0)
+		bar.Size = UDim2.new(0, 0, 0, 7.5)
+		
+		local corner_radius = Instance.new("UICorner")
+		corner_radius.CornerRadius = UDim.new(0, 6)
+		corner_radius.Parent = bar
+		
+		local stroke = Instance.new("UIStroke")
+		stroke.Parent = bar
+		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		stroke.Color = Color3.fromRGB(255, 255, 255)
+
+		local gradient = Instance.new("UIGradient")
+		gradient.Parent = stroke
+		gradient.Transparency = NumberSequence.new{
+			NumberSequenceKeypoint.new(0.00, 0.00), 
+			NumberSequenceKeypoint.new(0.51, 1.00), 
+			NumberSequenceKeypoint.new(1.00, 0.00)
+		}
+		gradient.Color = ColorSequence.new{
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(68, 126, 139)), 
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(68, 126, 139))
+		}		
+		gradient.Rotation = 86
+
+		local bar_tween = tween_service:Create(bar, TweenInfo.new(self.duration, Enum.EasingStyle.Linear), {Size = UDim2.new(1, 0, 0, 7.5)})
+		bar_tween:Play()
+		bar_tween.Completed:Wait()
+		
+		self:_Destroy()
+		
+	end
+end
+
 core_ui_manager = {} do
 	function core_ui_manager:Init()
 		local success, coreUI = pcall(function()
@@ -2874,6 +3066,7 @@ core_ui_manager = {} do
 		window_obj.collapsed = setting.Collapsed
 
 		window_obj:_CreateWindowBase(self.safe_gui, setting)
+		window_obj:_CreateNotificationContainer(self.safe_gui)
 		window_obj:_CreateWindowContainer()
 		window_obj:_CreateContentFrame()
 		window_obj:_CreateTitlebar(setting)
@@ -3012,6 +3205,16 @@ core_ui_manager = {} do
 		setting_obj:_InjectIcon(parent, setting)
 
 		return setting_obj
+	end
+	
+	function core_ui_manager:coreNotify(parent, setting)
+		local notify_obj = setmetatable({}, notify_class)
+		
+		notify_obj:_CreateContainer(parent, setting)
+		notify_obj:_CreateContent()
+		notify_obj:_CreateBar()
+		
+		return notify_obj
 	end
 end
 
@@ -3298,7 +3501,25 @@ ZYVIX:InjectElement("InjectSetting", function(parent, setting)
 	return setting_obj
 end)
 
+ZYVIX:InjectElement("Notify", function(parent, setting)
+	setting = helper_functions:SetConfig({
+		Title = "Notification",
+		Description = [[
+		hello
+		i am a notification!
+		
+		]],
+		Duration = 3,
+	}, setting)
 
+	local keybind_obj = core_ui_manager:coreNotify(parent:GetNotificationContainer(), setting)
+
+	keybind_obj._CreateContainer = nil
+	keybind_obj._CreateContent = nil
+	keybind_obj._CreateBar = nil
+
+	return keybind_obj
+end)
 
 return ZYVIX
 
