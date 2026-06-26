@@ -1,5 +1,5 @@
 --[[
-v1.3.0
+v1.4.0
 _______________.___.____   ____._______  ___
 \____    /\__  |   |\   \ /   /|   \   \/  /
   /     /  /   |   | \   Y   / |   |\     / 
@@ -2482,11 +2482,27 @@ do
 		local raw = keycode.Name
 		return raw
 	end
+	
+	function keybind_class:PassModifier()
+		if not self.combination then return true end
+		
+		local success = true
+		for key, _ in pairs(self.combination) do
+			if not userinput_service:IsKeyDown(key) then
+				success = false
+				break
+			end
+		end
+		
+		return success
+	end
 
 	function keybind_class:_CreateKeybind(parent, setting)
 		if self.keybind_container then return end
 
 		self.value = setting.DefaultValue
+		self.combination = setting.Combination
+		warn(setting.Combination)
 		self.callback = setting.Callback
 
 		local keybind_container = Instance.new("Frame")
@@ -2560,6 +2576,7 @@ do
 				task.wait(0.5)
 			end
 		end))
+		
 
 		self:_StoreConn(userinput_service.InputBegan:Connect(function(input, processed)
 			if processed or input.UserInputType ~= Enum.UserInputType.Keyboard then return end
@@ -2573,7 +2590,7 @@ do
 				input_box.Text = self:_ConvertKeycodeToText(self.value)
 			end
 
-			if self.callback and input.KeyCode == self.value then
+			if self.callback and input.KeyCode == self.value and self:PassModifier() then
 				self:callback(self.value)
 			end
 		end))
@@ -3462,6 +3479,7 @@ ZYVIX:InjectElement("Keybind", function(parent, setting)
 	setting = helper_functions:SetConfig({
 		Label = "Fly Keybind",
 		DefaultValue = Enum.KeyCode.F,
+		Combination = nil,
 		Callback = function(self, value)
 			print("WSIgrjorgrw")
 		end,
