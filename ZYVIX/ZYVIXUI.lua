@@ -1,5 +1,5 @@
 --[[
-v2.0.0
+v2.1.0
 _______________.___.____   ____._______  ___
 \____    /\__  |   |\   \ /   /|   \   \/  /
   /     /  /   |   | \   Y   / |   |\     / 
@@ -13,7 +13,7 @@ ZYVIX UI
 INSPIRED BY REGUI, FLUENT
 
 CODE ADAPTED AND REWRITTEN FROM ###.lua
-architectural design and research: https://docs.google.com/document/d/1ATcD0tQCq1naHzWkQE621iLwlaqEfRk5kuLNCgndFqg/edit?tab=t.0
+architectural design and research (OLD!): https://docs.google.com/document/d/1ATcD0tQCq1naHzWkQE621iLwlaqEfRk5kuLNCgndFqg/edit?tab=t.0
 
 THE STRUCTURE DESIGN OF THIS UI LIB IS SIMILAR BUT NOT SKIDDED FROM (regui). IT HAS BEEN FULLY REWRITTEN.
 
@@ -207,6 +207,7 @@ do
 	function main_window_class:_CreateWindowBase(parent, setting)
 		if self.window_base then return end
 
+		self.loader = setting.Miniature
 		local pos = setting.Position
 		local size = helper_functions:ConvertToScale(setting.Size)
 
@@ -221,8 +222,6 @@ do
 		window_frame.AnchorPoint = Vector2.new(0.5, 0)
 		window_frame.Position = pos
 		window_frame.Size = size
-		
-		
 
 		local UI_padding = Instance.new("UIPadding")
 		UI_padding.Parent = window_frame
@@ -303,6 +302,13 @@ do
 		main_frame.BorderSizePixel = 0
 		main_frame.ClipsDescendants = true
 		main_frame.Size = UDim2.new(1, 0, 1, 0)
+		
+		local list_layout = Instance.new("UIListLayout")
+		list_layout.Parent = main_frame
+		list_layout.FillDirection = Enum.FillDirection.Vertical
+		list_layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+		list_layout.SortOrder = Enum.SortOrder.LayoutOrder
+		list_layout.VerticalAlignment = Enum.VerticalAlignment.Top
 
 		self.window_container = canvas_group
 		self.window_main_frame = main_frame
@@ -328,12 +334,14 @@ do
 		local padding = Instance.new("UIPadding")
 		padding.Parent = content_frame
 		padding.PaddingRight = UDim.new(0, 7)
+		padding.PaddingTop = UDim.new(0, 7)
 
 		local list_layout = Instance.new("UIListLayout")
 		list_layout.Parent = content_frame
-		list_layout.FillDirection = Enum.FillDirection.Horizontal
+		list_layout.FillDirection = self.loader and Enum.FillDirection.Vertical or Enum.FillDirection.Horizontal
 		list_layout.SortOrder = Enum.SortOrder.LayoutOrder
-		list_layout.VerticalAlignment = Enum.VerticalAlignment.Center
+		list_layout.VerticalAlignment = Enum.VerticalAlignment.Top
+		list_layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 		list_layout.Padding = UDim.new(0, 7)
 
 		local stroke = Instance.new("UIStroke")
@@ -362,7 +370,7 @@ do
 		title_bar.ClipsDescendants = true
 		title_bar.LayoutOrder = -1
 		title_bar.Position = UDim2.new(0, 0, 0, 0)
-		title_bar.Size = UDim2.new(1, 0, 0.1, 0)
+		title_bar.Size = UDim2.new(1, 0, 0, 44.8)
 		title_bar.ZIndex = 2
 
 		local padding = Instance.new("UIPadding")
@@ -400,20 +408,26 @@ do
 		local title_text = Instance.new("TextButton")
 		title_text.Parent = title_bar
 		title_text.Name = "TitleText"
+		title_text.AnchorPoint = Vector2.new(0.5, 0)
 		title_text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 		title_text.BackgroundTransparency = 1.000
 		title_text.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		title_text.BorderSizePixel = 0
 		title_text.LayoutOrder = 1
-		title_text.Position = UDim2.new(0.043032866, 0, 0, 0)
-		title_text.Size = UDim2.new(0.071, 0, 1.116, 0)
+		title_text.Position = UDim2.new(0.5, -15, 0, 0)
+		title_text.Size = UDim2.new(0.1, 0, 1, 0)
 		title_text.AutoButtonColor = false
 		title_text.Font = Enum.Font.MontserratBold
 		title_text.Text = tostring(setting.Title) or "ZYVIX"
 		title_text.TextColor3 = Color3.fromRGB(255, 255, 255)
-		title_text.TextSize = 21.000
+		title_text.TextScaled = true
 		title_text.ZIndex = 2
-		title_text.TextXAlignment = Enum.TextXAlignment.Left
+		title_text.TextXAlignment = Enum.TextXAlignment.Center
+		
+		local text_size_ratio = Instance.new("UITextSizeConstraint")
+		text_size_ratio.Parent = title_text
+		text_size_ratio.MinTextSize = 1
+		text_size_ratio.MaxTextSize = 21
 
 		local icon = Instance.new('ImageLabel')
 		icon.Parent = title_bar
@@ -422,9 +436,13 @@ do
 		icon.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		icon.BorderSizePixel = 0
 		icon.Position = UDim2.new(-0.017, 0, 0, 0)
-		icon.Size = UDim2.new(0.054, 0, 0.982, 0)
+		icon.Size = UDim2.new(1, 0, 1, 0)
 		icon.ZIndex = 2
 		icon.Image = tostring(setting.IconId)
+		
+		local ratio = Instance.new("UIAspectRatioConstraint")
+		ratio.AspectType = Enum.AspectType.ScaleWithParentSize
+		ratio.Parent = icon
 
 		local dragging, drag_input, input_pos, start_pos, tween
 
@@ -2396,7 +2414,7 @@ do
 		title.TextSize = setting.TextSize
 		title.TextXAlignment = setting.TextXAlignment
 		title.TextYAlignment = setting.TextYAlignment
-		title.TextWrapped = true
+		title.TextWrapped = setting.TextWrapped
 
 		self.label = label
 	end
@@ -4158,6 +4176,7 @@ function ZYVIX:CreateWindow(setting)
 		ManagementButtons = true,
 		Collapsed = false,
 		SmoothDrag = true,
+		Miniature = false,
 	}, setting)
 
 	local object = core_ui_manager:coreCreateWindow(setting)
@@ -4306,7 +4325,7 @@ ZYVIX:InjectElement("Label", function(parent, setting)
 		TextSize = 14.000,
 		TextXAlignment = Enum.TextXAlignment.Left,
 		TextYAlignment = Enum.TextYAlignment.Top,
-
+		TextWrapped = true,
 	}, setting)
 
 	local label_obj = core_ui_manager:coreCreateLabel(parent:GetBase(), setting)
