@@ -1,5 +1,5 @@
 --[[
-v1.4.0
+v2.0.0
 _______________.___.____   ____._______  ___
 \____    /\__  |   |\   \ /   /|   \   \/  /
   /     /  /   |   | \   Y   / |   |\     / 
@@ -10,7 +10,7 @@ _______________.___.____   ____._______  ___
 
 ZYVIX UI
 
-INSPIRED BY REGUI
+INSPIRED BY REGUI, FLUENT
 
 CODE ADAPTED AND REWRITTEN FROM ###.lua
 architectural design and research: https://docs.google.com/document/d/1ATcD0tQCq1naHzWkQE621iLwlaqEfRk5kuLNCgndFqg/edit?tab=t.0
@@ -39,19 +39,23 @@ proxy = setmetatable({}, {
 	end,
 })
 
+local debugging = true
+
 local tween_service = proxy.TweenService
 local run_service = proxy.RunService
 local content_provider = proxy.ContentProvider
 local userinput_service = proxy.UserInputService
 local players = proxy.Players
+local http_service = proxy.HttpService
 
+local viewport_size = workspace.CurrentCamera.ViewportSize
 
 local main_genv = getgenv and getgenv() or _G
 if main_genv and main_genv._ZYVIX then
 	return main_genv._ZYVIX
 end
 
-local universal_tween = TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
+local universal_tween = TweenInfo.new(0.25, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
 
 local ensure_funcs = {} do
 	function ensure_funcs:IsValidConn(conn: RBXScriptSignal)
@@ -144,9 +148,9 @@ do
 
 	function main_window_class:_AddTween(obj: Instance, tween_info: TweenInfo, property)
 		tween_info = tween_info or TweenInfo.new(
-			0.5,
-			Enum.EasingStyle.Sine,
-			Enum.EasingDirection.InOut
+			0.25,
+			Enum.EasingStyle.Quad,
+			Enum.EasingDirection.Out
 		)
 
 		local tween = self:_CreateTween(obj, tween_info, property)
@@ -204,7 +208,7 @@ do
 		if self.window_base then return end
 
 		local pos = setting.Position
-		local size = setting.Size
+		local size = helper_functions:ConvertToScale(setting.Size)
 
 		local window_frame = Instance.new("Frame")
 
@@ -217,18 +221,8 @@ do
 		window_frame.AnchorPoint = Vector2.new(0.5, 0)
 		window_frame.Position = pos
 		window_frame.Size = size
-
-		local image_label = Instance.new("ImageLabel")
-		image_label.Parent = window_frame
-		image_label.Name = "Eye"
-		image_label.Size = UDim2.new(1,0,1,0)
-		image_label.BackgroundTransparency = 1
-		image_label.Image = "rbxassetid://98388929815173"
-		image_label.ScaleType = Enum.ScaleType.Fit
-		image_label.ZIndex = -2
-		image_label.ImageTransparency = 0.5
-
-
+		
+		
 
 		local UI_padding = Instance.new("UIPadding")
 		UI_padding.Parent = window_frame
@@ -257,18 +251,12 @@ do
 		notification_container.Position = UDim2.new(1, 0, 1, 0)
 		notification_container.Size = UDim2.new(0.2, 0, 1, 0)
 		
-		local list_layout = Instance.new("UIListLayout")
-		list_layout.Parent = notification_container
-		list_layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-		list_layout.SortOrder = Enum.SortOrder.LayoutOrder
-		list_layout.VerticalAlignment = Enum.VerticalAlignment.Bottom
-
 		local padding = Instance.new("UIPadding")
 		padding.Parent = notification_container
-		padding.PaddingBottom = UDim.new(0, 5)
-		padding.PaddingLeft = UDim.new(0, 5)
-		padding.PaddingRight = UDim.new(0, 5)
-		padding.PaddingTop = UDim.new(0, 5)
+		padding.PaddingBottom = UDim.new(0, 7)
+		padding.PaddingLeft = UDim.new(0, 7)
+		padding.PaddingRight = UDim.new(0, 7)
+		padding.PaddingTop = UDim.new(0, 7)
 		
 		self.notification_container = notification_container
 	end
@@ -299,20 +287,12 @@ do
 		local stroke = Instance.new("UIStroke")
 		stroke.Parent = canvas_group
 		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-		stroke.Color = Color3.fromRGB(255, 255, 255)
+		stroke.Color = Color3.fromRGB(149, 149, 149)
 
 		local gradient = Instance.new("UIGradient")
 		gradient.Parent = stroke
-		gradient.Transparency = NumberSequence.new{
-			NumberSequenceKeypoint.new(0.00, 0.00), 
-			NumberSequenceKeypoint.new(0.51, 1.00), 
-			NumberSequenceKeypoint.new(1.00, 0.00)
-		}
-		gradient.Color = ColorSequence.new{
-			ColorSequenceKeypoint.new(0, Color3.fromRGB(68, 126, 139)), 
-			ColorSequenceKeypoint.new(1, Color3.fromRGB(68, 126, 139))
-		}
-		gradient.Rotation = 86
+		gradient.Transparency = NumberSequence.new{NumberSequenceKeypoint.new(0.00, 1.00), NumberSequenceKeypoint.new(0.35, 0.00), NumberSequenceKeypoint.new(0.56, 0.00), NumberSequenceKeypoint.new(1.00, 1.00)}
+		gradient.Rotation = 90
 
 		local main_frame = Instance.new("Frame")
 		main_frame.Name = "main_frame"
@@ -337,21 +317,16 @@ do
 		local content_frame = Instance.new("Frame")
 		content_frame.Name = "content"
 		content_frame.Parent = self.window_main_frame
-		content_frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-		content_frame.BackgroundTransparency = 0.300
+		content_frame.BackgroundColor3 = Color3.fromRGB(11, 11, 11)
+		content_frame.BackgroundTransparency = 0.200
 		content_frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		content_frame.BorderSizePixel = 0
-		content_frame.Position = UDim2.new(0.001, 0, 0.096, 0)
+		content_frame.Position = UDim2.new(0, 0, 0.1, 0)
 		content_frame.Size = UDim2.new(1, 0, 0.9, 0)
 		content_frame.ClipsDescendants = true
 
-		local gradient = Instance.new("UIGradient")
-		gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(13, 18, 24)), ColorSequenceKeypoint.new(0.49, Color3.fromRGB(13, 18, 24)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(13, 18, 24))}
-		gradient.Parent = content_frame
-
 		local padding = Instance.new("UIPadding")
 		padding.Parent = content_frame
-		padding.PaddingLeft = UDim.new(0, 7)
 		padding.PaddingRight = UDim.new(0, 7)
 
 		local list_layout = Instance.new("UIListLayout")
@@ -380,12 +355,13 @@ do
 		local title_bar = Instance.new("Frame")
 		title_bar.Name = "title_bar"
 		title_bar.Parent = self.window_main_frame
-		title_bar.BackgroundColor3 = Color3.fromRGB(16, 20, 26)
+		title_bar.BackgroundColor3 = Color3.fromRGB(11, 11, 11)
+		title_bar.BackgroundTransparency = 0.2
 		title_bar.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		title_bar.BorderSizePixel = 0
 		title_bar.ClipsDescendants = true
 		title_bar.LayoutOrder = -1
-		title_bar.Position = UDim2.new(0, 0, -0.002, 0)
+		title_bar.Position = UDim2.new(0, 0, 0, 0)
 		title_bar.Size = UDim2.new(1, 0, 0.1, 0)
 		title_bar.ZIndex = 2
 
@@ -416,7 +392,7 @@ do
 		drag_bar.AutomaticSize = Enum.AutomaticSize.Y
 		drag_bar.Size = UDim2.new(1, 0, 1, 0)
 		drag_bar.AutoButtonColor = false
-		drag_bar.Font = Enum.Font.SourceSans
+		drag_bar.Font = Enum.Font.MontserratMedium
 		drag_bar.TextColor3 = Color3.fromRGB(0, 0, 0)
 		drag_bar.TextSize = 14.000
 		drag_bar.TextTransparency = 1.000
@@ -432,9 +408,9 @@ do
 		title_text.Position = UDim2.new(0.043032866, 0, 0, 0)
 		title_text.Size = UDim2.new(0.071, 0, 1.116, 0)
 		title_text.AutoButtonColor = false
-		title_text.Font = Enum.Font.GothamBold
+		title_text.Font = Enum.Font.MontserratBold
 		title_text.Text = tostring(setting.Title) or "ZYVIX"
-		title_text.TextColor3 = Color3.fromRGB(53, 78, 106)
+		title_text.TextColor3 = Color3.fromRGB(255, 255, 255)
 		title_text.TextSize = 21.000
 		title_text.ZIndex = 2
 		title_text.TextXAlignment = Enum.TextXAlignment.Left
@@ -448,12 +424,12 @@ do
 		icon.Position = UDim2.new(-0.017, 0, 0, 0)
 		icon.Size = UDim2.new(0.054, 0, 0.982, 0)
 		icon.ZIndex = 2
-		icon.Image = tostring(setting.icon_id)
+		icon.Image = tostring(setting.IconId)
 
-		local dragging, drag_input, input_pos, start_pos
+		local dragging, drag_input, input_pos, start_pos, tween
 
 		self:_StoreConn(drag_bar.InputBegan:Connect(function(input)
-			if input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
+			if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then return end
 
 			dragging = true
 			input_pos = input.Position
@@ -461,7 +437,7 @@ do
 		end))
 
 		self:_StoreConn(drag_bar.InputEnded:Connect(function(input)
-			if input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
+			if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then return end
 
 			dragging = nil
 		end))
@@ -473,13 +449,27 @@ do
 			end
 
 			local delta = input.Position - input_pos
-
-			self.window_base.Position = UDim2.new(
+			
+			local target_pos = UDim2.new(
 				start_pos.X.Scale, 
 				start_pos.X.Offset + delta.X,
 				start_pos.Y.Scale, 
 				start_pos.Y.Offset + delta.Y
 			)
+			
+			if not setting.SmoothDrag then
+				self.window_base.Position = target_pos
+				return
+			end
+			
+			if tween then
+				tween:Cancel()
+				tween = nil
+			end
+			
+			tween = self:_AddTween(self.window_base, nil, {Position = target_pos})
+			tween:Play()
+			
 		end))
 
 		self.title_bar = title_bar
@@ -497,6 +487,7 @@ do
 		collapse_tween.Completed:Wait()
 
 		self.window_content.Visible = false
+		self.window_base.Active = false
 		self.collapsed = true
 	end
 
@@ -505,11 +496,13 @@ do
 		if not self.window_content then return end
 
 		self.window_content.Visible = true
-
+		self.window_base.Active = true
+		
 		local collapse_tween = self:_AddTween(self.window_content, universal_tween, {Size = UDim2.new(1, 0, 0.9, 0)})
 		collapse_tween:Play()
 		collapse_tween.Completed:Wait()
 
+		
 		self.collapsed = false
 	end
 
@@ -545,6 +538,7 @@ do
 		close_frame.Name = "CloseFrame"
 		close_frame.AnchorPoint = Vector2.new(0, 0.5)
 		close_frame.BackgroundColor3 = Color3.fromRGB(13, 19, 26)
+		close_frame.BackgroundTransparency = 1
 		close_frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		close_frame.BorderSizePixel = 0
 		close_frame.LayoutOrder = 1
@@ -556,11 +550,6 @@ do
 
 		local corner_border = Instance.new("UICorner")
 		corner_border.Parent = close_frame
-
-		local stroke_border = Instance.new("UIStroke")
-		stroke_border.Parent = close_frame
-		stroke_border.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-		stroke_border.Color = Color3.fromRGB(62, 62, 62)
 
 		local close_btn = Instance.new("ImageButton")
 		close_btn.Name = "CloseBtn"
@@ -582,6 +571,7 @@ do
 		hide_btn_container.Name = "HideFrame"
 		hide_btn_container.AnchorPoint = Vector2.new(0, 0.5)
 		hide_btn_container.BackgroundColor3 = Color3.fromRGB(13, 19, 26)
+		hide_btn_container.BackgroundTransparency = 1
 		hide_btn_container.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		hide_btn_container.BorderSizePixel = 0
 		hide_btn_container.Size = UDim2.new(0.6, 0, 0.6, 0)
@@ -589,7 +579,6 @@ do
 
 		ui_scaler:Clone().Parent = hide_btn_container
 		corner_border:Clone().Parent = hide_btn_container
-		stroke_border:Clone().Parent = hide_btn_container
 
 		local hide_btn = Instance.new("ImageButton")
 		hide_btn.Name = "CollapseBtn"
@@ -644,54 +633,21 @@ do
 		tab_container.Name = tostring(title)
 		tab_container.Parent = parent
 		tab_container.AnchorPoint = Vector2.new(0.5, 0)
-		tab_container.BackgroundColor3 = Color3.fromRGB(21, 46, 54)
-		tab_container.BackgroundTransparency = 0.800
+		tab_container.BackgroundColor3 = Color3.fromRGB(147, 147, 147)
+		tab_container.BackgroundTransparency = 1
 		tab_container.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		tab_container.BorderSizePixel = 0
 		tab_container.Position = UDim2.new(0.5, 0, -0.001, 0)
-		tab_container.Size = UDim2.new(0.9, 0, 0.04, 0)
+		tab_container.Size = UDim2.new(1, 0, 0.04, 0)
 		
-		local glow = Instance.new("ImageLabel")
-		glow.Active = false
-		glow.Name = "glow"
-		glow.Parent = tab_container
-		glow.AnchorPoint = Vector2.new(0.5, 0.5)
-		glow.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-		glow.BackgroundTransparency = 1.000
-		glow.BorderColor3 = Color3.fromRGB(0, 0, 0)
-		glow.BorderSizePixel = 0
-		glow.Position = UDim2.new(0.5, 0, 0.5, 0)
-		glow.Size = UDim2.new(2, 0, 2, 0)
-		glow.ZIndex = -1
-		glow.Image = "rbxassetid://5538771868"
-		glow.ImageColor3 = Color3.fromRGB(121, 230, 255)
-		glow.ImageTransparency = 1.000
+		local corner = Instance.new("UICorner")
+		corner.CornerRadius = UDim.new(0, 2)
+		corner.Parent = tab_container
 		
 		local content_frame = Instance.new("CanvasGroup")
 		content_frame.Parent = tab_container
 		content_frame.BackgroundTransparency = 1
 		content_frame.Size = UDim2.new(1, 0, 1, 0)
-
-		local stroke = Instance.new("UIStroke")
-		stroke.Parent = content_frame
-		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-		stroke.Color = Color3.fromRGB(255, 255, 255)
-		
-		local gradient = Instance.new("UIGradient")
-		gradient.Parent = stroke
-		gradient.Transparency = NumberSequence.new{
-			NumberSequenceKeypoint.new(0.00, 0.00), 
-			NumberSequenceKeypoint.new(0.51, 1.00), 
-			NumberSequenceKeypoint.new(1.00, 0.00)
-		}
-		gradient.Color = ColorSequence.new{
-			ColorSequenceKeypoint.new(0, Color3.fromRGB(68, 126, 139)), 
-			ColorSequenceKeypoint.new(1, Color3.fromRGB(68, 126, 139))
-		}
-		gradient.Rotation = 77
-
-		local corner = Instance.new("UICorner")
-		corner.Parent = content_frame
 
 		local padding = Instance.new("UIPadding")
 		padding.Parent = content_frame
@@ -705,7 +661,7 @@ do
 		main_button.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		main_button.BorderSizePixel = 0
 		main_button.Size = UDim2.new(1, 0, 1, 0)
-		main_button.Font = Enum.Font.SourceSans
+		main_button.Font = Enum.Font.MontserratMedium
 		main_button.TextColor3 = Color3.fromRGB(0, 0, 0)
 		main_button.TextSize = 14.000
 		main_button.TextTransparency = 1.000
@@ -733,10 +689,16 @@ do
 		text_label.Size = UDim2.new(1, 0, 1, 0)
 		text_label.Font = Enum.Font.MontserratMedium
 		text_label.Text = title
-		text_label.TextColor3 = Color3.fromRGB(255, 255, 255)
-		text_label.TextSize = 20.000
+		text_label.TextColor3 = Color3.fromRGB(198, 198, 198)
+		text_label.TextSize = 15.000
+		text_label.TextScaled = true
 		text_label.TextWrapped = true
-		text_label.TextXAlignment = Enum.TextXAlignment.Left
+		text_label.TextXAlignment = Enum.TextXAlignment.Center
+		
+		local text_size_ratio = Instance.new("UITextSizeConstraint")
+		text_size_ratio.Parent = text_label
+		text_size_ratio.MinTextSize = 1
+		text_size_ratio.MaxTextSize = 15
 
 		local icon = Instance.new("ImageLabel")
 		icon.Parent = content_frame
@@ -749,7 +711,7 @@ do
 		icon.LayoutOrder = 1
 		icon.Position = UDim2.new(0, 0, 0.5, 0)
 		icon.Size = UDim2.new(1, 0, 0.7, 0)
-		icon.Image = icon_id
+		icon.Image = "rbxassetid://" .. icon_id
 		icon.ScaleType = Enum.ScaleType.Fit
 
 		local sizing_ratio = Instance.new("UIAspectRatioConstraint")
@@ -848,13 +810,9 @@ do
 			local active_content = active_tab.tab
 
 			tween_service:Create(active_content, tween_info, {
-					BackgroundTransparency = 0.8
-				}):Play()
+					BackgroundTransparency = 1
+			}):Play()
 			
-			tween_service:Create(active_content.glow, tween_info, {
-					ImageTransparency = 1
-				}):Play()
-
 			active_tab.content_container.Visible = false
 		end
 
@@ -863,12 +821,9 @@ do
 		local content = selected_tab.tab
 
 		tween_service:Create(content, tween_info, {
-			BackgroundTransparency = 0.350
+			BackgroundTransparency = 0.9
 		}):Play()
-		
-		tween_service:Create(content.glow, tween_info, {
-				ImageTransparency = 0.9
-			}):Play()
+
 
 		self.active_tab_index = index
 	end
@@ -879,27 +834,13 @@ do
 		local container_frame = Instance.new("Frame")
 		container_frame.Parent = parent
 		container_frame.Name = "Tablist"
-		container_frame.BackgroundColor3 = Color3.fromRGB(21, 46, 54)
-		container_frame.BackgroundTransparency = 0.300
+		container_frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		container_frame.BackgroundTransparency = 1
 		container_frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		container_frame.BorderSizePixel = 0
-		container_frame.ClipsDescendants = true
 		container_frame.Position = UDim2.new(0, -7, 0, -9)
-		container_frame.Size = UDim2.new(0.181089625, 0, 0.970223308, 0)
-
-		local corner_radius = Instance.new("UICorner")
-		corner_radius.Parent = container_frame
-
-		local stroke = Instance.new("UIStroke")
-		stroke.Parent = container_frame
-		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-		stroke.Color = Color3.fromRGB(48, 49, 54)
-
-		local gradient = Instance.new("UIGradient")
-		gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(47, 49, 54)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(0, 0, 0))}
-		gradient.Rotation = 90
-		gradient.Transparency = NumberSequence.new{NumberSequenceKeypoint.new(0.00, 0.50), NumberSequenceKeypoint.new(1.00, 0.50)}
-		gradient.Parent = container_frame
+		container_frame.Size = UDim2.new(0.181, 0, 1, 0)
+		container_frame.ClipsDescendants = true
 
 		self.tab_container = container_frame
 	end
@@ -912,10 +853,10 @@ do
 		content_frame.Name = "TabContent"
 		content_frame.Parent = self.tab_container
 		content_frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-		content_frame.BackgroundTransparency = 1.000
+		content_frame.BackgroundTransparency = 1
 		content_frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		content_frame.BorderSizePixel = 0
-		content_frame.Size = UDim2.new(1, 0, 1, 0)
+		content_frame.Size = UDim2.new(1.04, 0, 1, 0)
 
 		local scrolling_frame = Instance.new("ScrollingFrame")
 		scrolling_frame.Parent = content_frame
@@ -925,10 +866,11 @@ do
 		scrolling_frame.BackgroundTransparency = 1.000
 		scrolling_frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		scrolling_frame.BorderSizePixel = 0
-		scrolling_frame.Position = UDim2.new(0, 0, 0.2, 0)
-		scrolling_frame.Size = UDim2.new(1, 0, 0.65, 0)
+		scrolling_frame.Position = UDim2.new(0, 0, 0.1, 0)
+		scrolling_frame.Size = UDim2.new(1, 0, 0.9, 0)
 		scrolling_frame.BottomImage = ""
 		scrolling_frame.MidImage = ""
+		scrolling_frame.ClipsDescendants = true
 		scrolling_frame.ScrollBarThickness = 0
 		scrolling_frame.TopImage = ""
 
@@ -951,7 +893,7 @@ do
 		top_section.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		top_section.BorderSizePixel = 0
 		top_section.Position = UDim2.new(0.5, 0, 0, 0)
-		top_section.Size = UDim2.new(0.9, 0, 0.187, 0)
+		top_section.Size = UDim2.new(0.9, 0, 0.1, 0)
 
 		list_layout:Clone().Parent = top_section
 		padding:Clone().Parent = top_section
@@ -969,7 +911,7 @@ do
 		if not self.component_container then return end
 		if not self.tab_container then return end
 		
-		local close_tween = tween_service:Create(self.tab_container, universal_tween, {Size = UDim2.new(0.046, 0, 0.97, 0)})
+		local close_tween = tween_service:Create(self.tab_container, universal_tween, {Size = UDim2.new(0.042, 0, 0.97, 0)})
 		close_tween:Play()
 		
 		tween_service:Create(self.component_container, universal_tween, {Size = UDim2.new(0.945, 0, 0.95, 0)}):Play()
@@ -1098,7 +1040,7 @@ do
 	end
 
 	function section_class:_CreateScrollingCanvas(parent, setting)
-		if self.scrolling_content then return end
+		if self.scrolling_frame then return end
 
 		local scrolling_frame = Instance.new("ScrollingFrame")
 		scrolling_frame.Parent = parent
@@ -1114,9 +1056,41 @@ do
 		scrolling_frame.TopImage = ""
 		scrolling_frame.AutomaticSize = Enum.AutomaticSize.Y
 		scrolling_frame.AutomaticCanvasSize = Enum.AutomaticSize.Y
-		scrolling_frame.CanvasSize = UDim2.new(0,0,0,0)
+		scrolling_frame.CanvasSize = UDim2.new(0,0,1.6,0)
 
 		self.scrolling_frame = scrolling_frame
+	end
+	
+	function section_class:_CreateGlow()
+		if not self.scrolling_frame then return end
+		
+		local glow = Instance.new("ImageLabel")
+		glow.Parent = self.scrolling_frame
+		glow.Name = "glow"
+		glow.AnchorPoint = Vector2.new(0.5, 0.5)
+		glow.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		glow.BackgroundTransparency = 1.000
+		glow.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		glow.BorderSizePixel = 0
+		glow.Position = UDim2.new(0.5, 0, 0.5, 0)
+		glow.Size = UDim2.new(1.5, 0, 1.5, 0)
+		glow.Image = "rbxassetid://129224956712931"
+		glow.ImageColor3 = Color3.fromRGB(62, 223, 255)
+		glow.ImageTransparency = 0.950
+
+		local top_glow = Instance.new("ImageLabel")
+		top_glow.Parent = self.scrolling_frame
+		top_glow.Name = "TopGlow"
+		top_glow.AnchorPoint = Vector2.new(0.5, 0.5)
+		top_glow.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		top_glow.BackgroundTransparency = 1.000
+		top_glow.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		top_glow.BorderSizePixel = 0
+		top_glow.Position = UDim2.new(0.5, 0, 0, 0)
+		top_glow.Size = UDim2.new(1, 0, 0.04, 0)
+		top_glow.Image = "rbxassetid://129224956712931"
+		top_glow.ImageColor3 = Color3.fromRGB(62, 223, 255)
+		top_glow.ImageTransparency = 0.900
 	end
 
 	function section_class:_CreateSection(setting)
@@ -1126,7 +1100,7 @@ do
 		local section_container = Instance.new("Frame")
 		section_container.Name = "section"
 		section_container.Parent = self.scrolling_frame
-		section_container.BackgroundColor3 = Color3.fromRGB(13, 19, 26)
+		section_container.BackgroundColor3 = Color3.fromRGB(21, 46, 54)
 		section_container.BackgroundTransparency = 0.500
 		section_container.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		section_container.BorderSizePixel = 0
@@ -1149,11 +1123,25 @@ do
 		local corner_radius = Instance.new("UICorner")
 		corner_radius.Parent = section_container
 
-		local gradient = Instance.new("UIGradient")
-		gradient.Parent = section_container
-		gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(16, 24, 40)), ColorSequenceKeypoint.new(0.49, Color3.fromRGB(0, 0, 0)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(16, 24, 40))}
-		gradient.Rotation = 90
+		local stroke = Instance.new("UIStroke")
+		stroke.Parent = section_container
+		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		stroke.Color = Color3.fromRGB(255, 255, 255)
 
+		local gradient = Instance.new("UIGradient")
+		gradient.Parent = stroke
+		gradient.Transparency = NumberSequence.new{
+			NumberSequenceKeypoint.new(0.00, 0.00), 
+			NumberSequenceKeypoint.new(0.51, 1.00), 
+			NumberSequenceKeypoint.new(1.00, 0.00)
+		}
+		gradient.Color = ColorSequence.new{
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(68, 126, 139)), 
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(68, 126, 139))
+		}
+		gradient.Rotation = 86
+		
+		
 		self.section_frame = section_container
 	end
 end
@@ -1201,10 +1189,10 @@ do
 		button_container.Parent = parent
 		button_container.Name = "Button"
 		button_container.BackgroundColor3 = Color3.fromRGB(21, 46, 54)
-		button_container.BackgroundTransparency = 0.350
+		button_container.BackgroundTransparency = 1
 		button_container.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		button_container.BorderSizePixel = 0
-		button_container.Size = UDim2.new(0.5, 0, 0, 20)
+		button_container.Size = UDim2.new(0.75, 0, 0, 35)
 
 		button_container.Destroying:Once(function()
 			self:_Destroy()
@@ -1217,53 +1205,56 @@ do
 		local stroke = Instance.new("UIStroke")
 		stroke.Parent = button_container
 		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-		stroke.Color = Color3.fromRGB(255, 255, 255)
-
-		local gradient = Instance.new("UIGradient")
-		gradient.Parent = stroke
-		gradient.Transparency = NumberSequence.new{
-			NumberSequenceKeypoint.new(0.00, 0.00), 
-			NumberSequenceKeypoint.new(0.51, 1.00), 
-			NumberSequenceKeypoint.new(1.00, 0.00)
-		}
-		gradient.Color = ColorSequence.new{
-			ColorSequenceKeypoint.new(0, Color3.fromRGB(68, 126, 139)), 
-			ColorSequenceKeypoint.new(1, Color3.fromRGB(68, 126, 139))
-		}
-		gradient.Rotation = 86
+		stroke.Color = Color3.fromRGB(68, 126, 139)
 
 		local label = Instance.new("TextLabel")
 		label.Parent = button_container
 		label.BackgroundTransparency = 1
 		label.Name = "Label"
 		label.Text = setting.Label
-		label.TextSize = 14
+		label.TextSize = 18
 		label.TextColor3 = Color3.fromRGB(255,255,255)
-		label.Size = UDim2.new(1,0,1,0)
+		label.Size = UDim2.new(0.8,0,1,0)
 		label.Position = UDim2.new(0.025, 0, 0, 0)
 		label.Font = Enum.Font.MontserratMedium
+		label.TextScaled = true
 		label.TextStrokeTransparency = 0.75
 		label.TextXAlignment = Enum.TextXAlignment.Left
-
 
 		local text_size_ratio = Instance.new("UITextSizeConstraint")
 		text_size_ratio.Parent = label
 		text_size_ratio.MinTextSize = 1
-		text_size_ratio.MaxTextSize = 14
+		text_size_ratio.MaxTextSize = 18
 
 		local button = Instance.new("TextButton")
 		button.Parent = button_container
 		button.Name = "btn"
-		button.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		button.BackgroundColor3 = Color3.fromRGB(21, 46, 54)
 		button.BackgroundTransparency = 1.000
 		button.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		button.BorderSizePixel = 0
 		button.Size = UDim2.new(1, 0, 1, 0)
 		button.ZIndex = 3
-		button.Font = Enum.Font.SourceSans
+		button.Font = Enum.Font.MontserratMedium
 		button.Text = ""
 		button.TextColor3 = Color3.fromRGB(0, 0, 0)
 		button.TextSize = 14.000
+		button.AutoButtonColor = false
+		
+		local cursor = Instance.new("ImageLabel")
+		cursor.Parent = button_container
+		cursor.Name = "Cursor"
+		cursor.AnchorPoint = Vector2.new(1, 0)
+		cursor.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		cursor.BackgroundTransparency = 1.000
+		cursor.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		cursor.BorderSizePixel = 0
+		cursor.Position = UDim2.new(1, 0, 0, 0)
+		cursor.Size = UDim2.new(1, 0, 1, 0)
+		cursor.Image = "rbxassetid://123921394"
+		
+		local ratio = Instance.new("UIAspectRatioConstraint")
+		ratio.Parent = cursor
 
 		self:_StoreConn(button.MouseEnter:Connect(function()
 			if not self.button then return end
@@ -1271,8 +1262,15 @@ do
 			tween_service:Create(
 				self.button,
 				universal_tween,
-				{BackgroundColor3 = Color3.fromRGB(102, 194, 255)}
-			)
+				{BackgroundTransparency = 0.9}
+			):Play()
+			
+			tween_service:Create(
+				self.button,
+				universal_tween,
+				{BackgroundColor3 = Color3.fromRGB(212, 212, 212)}
+			):Play()
+			
 		end))
 
 		self:_StoreConn(button.MouseLeave:Connect(function()
@@ -1281,8 +1279,14 @@ do
 			tween_service:Create(
 				self.button,
 				universal_tween,
-				{BackgroundColor3 = Color3.fromRGB(255, 255, 255)}
-			)
+				{BackgroundTransparency = 1}
+			):Play()
+			
+			tween_service:Create(
+				self.button,
+				universal_tween,
+				{BackgroundColor3 = Color3.fromRGB(21, 46, 54)}
+			):Play()
 		end))
 
 		self:_StoreConn(button.MouseButton1Click:Connect(function()
@@ -1291,12 +1295,29 @@ do
 			if setting.Callback then
 				setting.Callback()
 			end
+			
+			self.button.BackgroundColor3 = Color3.fromRGB(45, 100, 117)
+			self.button.BackgroundTransparency = 0.7
+			
+			tween_service:Create(
+				self.button,
+				universal_tween,
+				{BackgroundTransparency = 1}
+			):Play()
+
+			tween_service:Create(
+				self.button,
+				universal_tween,
+				{BackgroundColor3 = Color3.fromRGB(71, 158, 184)}
+			):Play()
+			
 		end))
 
 
 		self.button = button
 	end
 end
+
 
 --[[
 todo list checkbox:
@@ -1344,6 +1365,10 @@ do
 		self:_ChangeState(boolean)
 		return self
 	end
+	
+	function checkbox_class:GetValue()
+		return self.value
+	end
 
 	function checkbox_class:_StoreConn(conn)
 		return helper_functions:_StoreConn(self.stored_conn, conn)
@@ -1390,43 +1415,38 @@ do
 
 		tween_service:Create(self.checkbox_tick, universal_tween, {BackgroundTransparency = target_transparency}):Play()
 
+		self.value = value
+
 		if self.callback then
 			self:callback(value)
 		end
-
-		self.value = value
 	end
 
 	function checkbox_class:_CreateCheckBoxContainer(parent, setting)
 		if self.checkbox_container then return end
+		
 		self.value = setting.Value
 		self.state = setting.State
 		self.callback = setting.Callback
+		self.description = (setting.Description and tostring(setting.Description))
 
 		local check_box_container = Instance.new("Frame")
 		check_box_container.Parent = parent
 		check_box_container.Name = "Checkbox"
+		check_box_container.AutomaticSize = Enum.AutomaticSize.Y
 		check_box_container.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 		check_box_container.BackgroundTransparency = not self.state and 0.500 or 1.000
 		check_box_container.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		check_box_container.BorderSizePixel = 0
-		check_box_container.AutomaticSize = Enum.AutomaticSize.X
-		check_box_container.Size = UDim2.new(1, 0, 0, 20)
+		check_box_container.Size = self.description and UDim2.new(1, 0, 0, 45) or UDim2.new(1, 0, 0, 35)
 		check_box_container.ZIndex = 2
 
 		check_box_container.Destroying:Connect(function()
 			self:_Destroy()
 		end)
 
-		local list_layout = Instance.new("UIListLayout")
-		list_layout.Parent = check_box_container
-		list_layout.FillDirection = Enum.FillDirection.Horizontal
-		list_layout.SortOrder = Enum.SortOrder.LayoutOrder
-		list_layout.VerticalAlignment = Enum.VerticalAlignment.Center
-		list_layout.Padding = UDim.new(0, 7)
-
 		local corner_radius = Instance.new("UICorner")
-		corner_radius.CornerRadius = UDim.new(0, 2)
+		corner_radius.CornerRadius = UDim.new(0, 4)
 		corner_radius.Parent = check_box_container
 
 		local gradient = Instance.new("UIGradient")
@@ -1435,24 +1455,65 @@ do
 
 		local label = Instance.new("TextLabel")
 		label.Parent = check_box_container
+		label.AnchorPoint = Vector2.new(0, 0.5)
 		label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 		label.BackgroundTransparency = 1.000
 		label.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		label.BorderSizePixel = 0
 		label.LayoutOrder = 1
-		label.Size = UDim2.new(0.9, 0, 1, 0)
+		label.Size = UDim2.new(0.8, 0, 1, 0)
+		label.Position = self.description and UDim2.new(0, 0, 0.2, 0) or UDim2.new(0, 0, 0.5, 0)
 		label.Font = Enum.Font.MontserratMedium
 		label.Text = setting.Label
 		label.TextColor3 = Color3.fromRGB(255, 255, 255)
 		label.TextScaled = true
-		label.TextSize = 14.000
+		label.TextSize = 15.000
 		label.TextWrapped = true
 		label.TextXAlignment = Enum.TextXAlignment.Left
+		
+		local padding = Instance.new("UIPadding")
+		padding.Parent = check_box_container
+		padding.PaddingBottom = UDim.new(0, 7)
+		padding.PaddingLeft = UDim.new(0, 7)
+		padding.PaddingRight = UDim.new(0, 7)
+		padding.PaddingTop = UDim.new(0, 7)
+		
+		local stroke = Instance.new("UIStroke")
+		stroke.Parent = check_box_container
+		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		stroke.Color = Color3.fromRGB(68, 126, 139)
 
 		local text_size_ratio = Instance.new("UITextSizeConstraint")
 		text_size_ratio.Parent = label
 		text_size_ratio.MinTextSize = 1
-		text_size_ratio.MaxTextSize = 14
+		text_size_ratio.MaxTextSize = 15
+		
+		if self.description then
+			local desc = Instance.new("TextLabel")
+			desc.Parent = check_box_container
+			desc.Name = "Desc"
+			desc.AnchorPoint = Vector2.new(0, 0.5)
+			desc.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			desc.BackgroundTransparency = 1.000
+			desc.BorderColor3 = Color3.fromRGB(0, 0, 0)
+			desc.BorderSizePixel = 0
+			desc.LayoutOrder = 1
+			desc.Position = UDim2.new(0, 0, 0.8, 0)
+			desc.Size = UDim2.new(0.8, 0, 1, 0)
+			desc.Font = Enum.Font.GothamMedium
+			desc.Text = self.description
+			desc.TextColor3 = Color3.fromRGB(173, 173, 173)
+			desc.TextScaled = true
+			desc.TextSize = 12.000
+			desc.TextTruncate = Enum.TextTruncate.AtEnd
+			desc.TextWrapped = true
+			desc.TextXAlignment = Enum.TextXAlignment.Left
+			
+			local text_size_ratio2 = Instance.new("UITextSizeConstraint")
+			text_size_ratio2.Parent = desc
+			text_size_ratio2.MinTextSize = 12
+			text_size_ratio2.MaxTextSize = 12
+		end
 
 		self.checkbox_container = check_box_container
 	end
@@ -1463,12 +1524,14 @@ do
 
 		local tick_container = Instance.new("Frame")
 		tick_container.Name = "box"
+		tick_container.AnchorPoint = Vector2.new(1, 0.5)
 		tick_container.Parent = self.checkbox_container
 		tick_container.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 		tick_container.BackgroundTransparency = 0.500
 		tick_container.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		tick_container.BorderSizePixel = 0
-		tick_container.Size = UDim2.new(0, 20, 0, 20)
+		tick_container.Position = UDim2.new(1, 0, 0.5, 0)
+		tick_container.Size = UDim2.new(0, 40, 0, 20)
 
 		local btn_frame = Instance.new("TextButton")
 		btn_frame.Parent = tick_container
@@ -1478,7 +1541,7 @@ do
 		btn_frame.BorderSizePixel = 0
 		btn_frame.ZIndex = 5
 		btn_frame.Size = UDim2.new(1, 0, 1, 0)
-		btn_frame.Font = Enum.Font.SourceSans
+		btn_frame.Font = Enum.Font.MontserratMedium
 		btn_frame.Text = ""
 		btn_frame.TextColor3 = Color3.fromRGB(0, 0, 0)
 		btn_frame.TextSize = 14.000
@@ -1509,7 +1572,25 @@ do
 
 		local secondary_gradient = Instance.new("UIGradient")
 		secondary_gradient.Parent = glow
-		secondary_gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(54, 103, 148)), ColorSequenceKeypoint.new(0.49, Color3.fromRGB(119, 193, 232)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(54, 103, 148))}
+		secondary_gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(35, 77, 90)), ColorSequenceKeypoint.new(0.48, Color3.fromRGB(72, 159, 186)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(35, 77, 90))}
+
+		local stroke = Instance.new("UIStroke")
+		stroke.Parent = glow
+		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		stroke.Color = Color3.fromRGB(255, 255, 255)
+
+		local gradient = Instance.new("UIGradient")
+		gradient.Parent = stroke
+		gradient.Transparency = NumberSequence.new{
+			NumberSequenceKeypoint.new(0.00, 0.00), 
+			NumberSequenceKeypoint.new(0.51, 1.00), 
+			NumberSequenceKeypoint.new(1.00, 0.00)
+		}
+		gradient.Color = ColorSequence.new{
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(68, 126, 139)), 
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(68, 126, 139))
+		}
+		gradient.Rotation = 86
 
 		self:_StoreConn(btn_frame.MouseButton1Click:Connect(function()
 			if not self.checkbox_tick or not self.state then return end
@@ -1557,8 +1638,22 @@ local dropdown_class = table.create(8)
 dropdown_class.__index = dropdown_class
 
 do
+	function dropdown_class:GetValue()
+		return self.value
+	end
+	
 	function dropdown_class:GetItems()
 		return self.items
+	end
+	
+	function dropdown_class:Clear()
+		table.clear(self.items)
+		return self
+	end
+	
+	function dropdown_class:SetList(tbl)
+		self.items = tbl
+		return self
 	end
 
 	function dropdown_class:SetItem(value)
@@ -1574,7 +1669,7 @@ do
 		return helper_functions:_StoreConn(self.stored_items, conn)
 	end
 
-	function dropdown_class:_Clear()
+	function dropdown_class:_ClearDropDown()
 		if not self.Itemlist then return end
 
 		for _, v in ipairs(self.Itemlist:GetChildren()) do
@@ -1613,8 +1708,10 @@ do
 		if self.hidden then return end
 
 		tween_service:Create(self.arrow_icon, universal_tween, {Rotation = 0}):Play()
-
-		self.Itemlist.Visible = false
+		tween_service:Create(self.arrow_icon, universal_tween, {Position = UDim2.new(1, 0, 0.5, 0)}):Play()
+		tween_service:Create(self.arrow_icon, universal_tween, {Size = UDim2.new(1, 0, 1, 0)}):Play()
+		
+		self.canvas_group.Visible = false
 		self.hidden = true
 	end
 
@@ -1624,8 +1721,10 @@ do
 		self:_RefreshList()
 
 		tween_service:Create(self.arrow_icon, universal_tween, {Rotation = 180}):Play()
+		tween_service:Create(self.arrow_icon, TweenInfo.new(1, Enum.EasingStyle.Cubic, Enum.EasingDirection.InOut), {Position = UDim2.new(1, 0, 0.7, 0)}):Play()
+		tween_service:Create(self.arrow_icon, universal_tween, {Size = UDim2.new(0.7, 0, 0.7, 0)}):Play()
 
-		self.Itemlist.Visible = true
+		self.canvas_group.Visible = true
 		self.hidden = false
 	end
 	
@@ -1639,7 +1738,7 @@ do
 			self:callback(value)
 		end
 	end
-	
+		
 	function dropdown_class:_AddItem(value, index)		
 		local str = (value and tostring(value)) or "NIL"
 		
@@ -1653,9 +1752,8 @@ do
 			table.insert(self.multi, str)
 		end
 		
-		
 		if obj then
-			obj.BackgroundTransparency = item and 0.800 or 0.350
+			obj:FindFirstChild("mark").Visible = not item
 		end
 		
 		self.Itemlist_container.value.Text = table.concat(self.multi, ", ")
@@ -1686,17 +1784,18 @@ do
 			conn = helper_functions:DisconnectConn(conn)
 		end
 		
-		self:_Clear()
+		self:_ClearDropDown()
 
 		for i, str in ipairs(self.items) do
+			str = tostring(str)
 			local image_id = (self.image_order[i] and tostring(self.image_order[i])) or "rbxasset://textures/ui/GuiImagePlaceholder.png"
 			
 			local local_transparency = (self.multi and table.find(self.multi, str)) and 0.350 or 0.800
 			
 			local item_container = Instance.new("TextButton")
 			item_container.Parent = self.Itemlist
-			item_container.Name = tostring(str)
-			item_container.BackgroundColor3 = Color3.fromRGB(21, 46, 54)
+			item_container.Name = str
+			item_container.BackgroundColor3 = Color3.fromRGB(41, 91, 106)
 			item_container.BackgroundTransparency = local_transparency
 			item_container.BorderColor3 = Color3.fromRGB(0, 0, 0)
 			item_container.BorderSizePixel = 0
@@ -1724,6 +1823,26 @@ do
 				ColorSequenceKeypoint.new(1, Color3.fromRGB(68, 126, 139))
 			}
 			gradient.Rotation = 77
+			
+			local mark = Instance.new("Frame")
+			mark.Name = "mark"
+			mark.Parent = item_container
+			mark.AnchorPoint = Vector2.new(0, 0.5)
+			mark.BackgroundColor3 = Color3.fromRGB(21, 46, 54)
+			mark.BackgroundTransparency = 0.5
+			mark.BorderColor3 = Color3.fromRGB(0, 0, 0)
+			mark.BorderSizePixel = 0
+			mark.Visible = self.multi and table.find(self.multi, str) or false
+			mark.Position = UDim2.new(0, 0, 0.5, 0)
+			mark.Size = UDim2.new(0, 10, 0.8, 0)
+						
+			local stroke = Instance.new("UIStroke")
+			stroke.Parent = mark
+			stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+			stroke.Color = Color3.fromRGB(68, 126, 139)
+			
+			local corner_radius = Instance.new("UICorner")
+			corner_radius.Parent = mark
 
 			local icon = Instance.new("ImageLabel")
 			icon.Parent = item_container
@@ -1748,7 +1867,7 @@ do
 			item_label.BorderSizePixel = 0
 			item_label.Size = UDim2.new(0.9, 0, 1, 0)
 			item_label.Font = Enum.Font.MontserratMedium
-			item_label.Text = tostring(str)
+			item_label.Text = str
 			item_label.TextColor3 = Color3.fromRGB(255, 255, 255)
 			item_label.TextSize = 14.000
 			item_label.ZIndex = 27
@@ -1775,11 +1894,24 @@ do
 		dropdown_container.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		dropdown_container.BorderSizePixel = 0
 		dropdown_container.ZIndex = 4
-		dropdown_container.Size = UDim2.new(1, 0, 0, 30)
+		dropdown_container.Size = UDim2.new(1, 0, 0, 45)
+		
 
 		dropdown_container.Destroying:Once(function()
 			self:_Destroy()
 		end)
+		
+		local padding = Instance.new("UIPadding")
+		padding.Parent = dropdown_container
+		padding.PaddingBottom = UDim.new(0, 7)
+		padding.PaddingLeft = UDim.new(0, 7)
+		padding.PaddingRight = UDim.new(0, 7)
+		padding.PaddingTop = UDim.new(0, 7)
+
+		local stroke = Instance.new("UIStroke")
+		stroke.Parent = dropdown_container
+		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		stroke.Color = Color3.fromRGB(68, 126, 139)
 
 		local btn = Instance.new("TextButton")
 		btn.Parent = dropdown_container
@@ -1790,7 +1922,7 @@ do
 		btn.BorderSizePixel = 0
 		btn.Size = UDim2.new(1, 0, 1, 0)
 		btn.ZIndex = 3
-		btn.Font = Enum.Font.SourceSans
+		btn.Font = Enum.Font.MontserratMedium
 		btn.Text = ""
 		btn.TextColor3 = Color3.fromRGB(0, 0, 0)
 		btn.TextSize = 14.000
@@ -1802,7 +1934,7 @@ do
 		label.BackgroundTransparency = 1.000
 		label.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		label.BorderSizePixel = 0
-		label.Position = UDim2.new(0.7, 5, 0, 0)
+		label.Position = UDim2.new(0, 5, 0, 0)
 		label.Size = UDim2.new(0.3, 0, 1, 0)
 		label.Font = Enum.Font.MontserratMedium
 		label.Text = setting.Label
@@ -1836,10 +1968,36 @@ do
 		local itemlist_container = Instance.new("Frame")
 		itemlist_container.Parent = self.dropdown_container
 		itemlist_container.Name = "container"
-		itemlist_container.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		itemlist_container.BackgroundColor3 = Color3.fromRGB(21, 46, 54)
+		itemlist_container.BackgroundTransparency = 0.5
 		itemlist_container.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		itemlist_container.BorderSizePixel = 0
-		itemlist_container.Size = UDim2.new(0.7, 0, 1, 0)
+		itemlist_container.AnchorPoint = Vector2.new(1, 0.5)
+		itemlist_container.Position = UDim2.new(1, 0, 0.5, 0)
+		itemlist_container.Size = UDim2.new(0.5, 0, 1, 0)
+		
+		local corner_radius = Instance.new("UICorner")
+		corner_radius.Parent = itemlist_container
+		corner_radius.CornerRadius = UDim.new(0, 4)
+
+		local stroke = Instance.new("UIStroke")
+		stroke.Parent = itemlist_container
+		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		stroke.Color = Color3.fromRGB(255, 255, 255)
+
+		local gradient = Instance.new("UIGradient")
+		gradient.Parent = stroke
+		gradient.Rotation = 70
+		gradient.Transparency = NumberSequence.new{
+			NumberSequenceKeypoint.new(0.00, 0.00), 
+			NumberSequenceKeypoint.new(0.51, 1.00), 
+			NumberSequenceKeypoint.new(1.00, 0.00)
+		}
+		gradient.Color = ColorSequence.new{
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(68, 126, 139)), 
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(68, 126, 139))
+		}
+
 
 		local gradient = Instance.new("UIGradient")
 		gradient.Parent = itemlist_container
@@ -1851,12 +2009,12 @@ do
 
 		local arrow_icon = Instance.new("ImageLabel")
 		arrow_icon.Parent = itemlist_container
-		arrow_icon.AnchorPoint = Vector2.new(1, 0)
+		arrow_icon.AnchorPoint = Vector2.new(1, 0.5)
 		arrow_icon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 		arrow_icon.BackgroundTransparency = 1.000
 		arrow_icon.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		arrow_icon.BorderSizePixel = 0
-		arrow_icon.Position = UDim2.new(1, 0, 0, 0)
+		arrow_icon.Position = UDim2.new(1, 0, 0.5, 0)
 		arrow_icon.Size = UDim2.new(1, 0, 1, 0)
 		arrow_icon.Image = "rbxassetid://11552476728"
 
@@ -1882,16 +2040,29 @@ do
 		text_size_ratio.Parent = value
 		text_size_ratio.MinTextSize = 1
 		text_size_ratio.MaxTextSize = 14
+		
+		local canvas_group = Instance.new("CanvasGroup")
+		canvas_group.Parent = itemlist_container
+		canvas_group.Name = "ItemList"
+		canvas_group.BackgroundColor3 = Color3.fromRGB(21, 46, 54)
+		canvas_group.BackgroundTransparency = 0.5
+		canvas_group.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		canvas_group.BorderSizePixel = 0
+		canvas_group.Visible = false
+		canvas_group.Position = UDim2.new(0, 0, 1, 0)
+		canvas_group.Size = UDim2.new(1, 0, 0, 200)
+		canvas_group.ZIndex = 25
 
 		local item_list = Instance.new("ScrollingFrame")
 		item_list.Name = "ItemList"
-		item_list.Parent = itemlist_container
+		item_list.Parent = canvas_group
 		item_list.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		item_list.BackgroundTransparency = 1
 		item_list.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		item_list.BorderSizePixel = 0
-		item_list.Visible = false
-		item_list.Position = UDim2.new(0, 0, 0.8, 0)
-		item_list.Size = UDim2.new(1, 0, 0, 200)
+		item_list.Position = UDim2.new(0, 0, 0, 0)
+		item_list.Size = UDim2.new(1, 0, 1, 0)
+		item_list.CanvasSize = UDim2.new(0, 0, 1, 0)
 		item_list.ZIndex = 25
 		item_list.BottomImage = ""
 		item_list.MidImage = ""
@@ -1900,8 +2071,7 @@ do
 		item_list.AutomaticCanvasSize = Enum.AutomaticSize.Y
 		item_list.ScrollingDirection = Enum.ScrollingDirection.Y
 
-		corner_radius:Clone().Parent = item_list
-		gradient:Clone().Parent = item_list
+		corner_radius:Clone().Parent = canvas_group
 
 		local list_layout = Instance.new("UIListLayout")
 		list_layout.SortOrder = Enum.SortOrder.LayoutOrder
@@ -1915,6 +2085,7 @@ do
 		self.arrow_icon = arrow_icon
 		self.Itemlist_container = itemlist_container
 		self.Itemlist = item_list
+		self.canvas_group = canvas_group
 	end
 end
 
@@ -2008,6 +2179,7 @@ do
 		self.callback = setting.Callback
 		self.label = setting.Label
 		self.state = setting.State
+		self.description = (setting.Description and tostring(setting.Description))
 
 		local inputbox_container = Instance.new("Frame")
 		inputbox_container.Parent = parent
@@ -2017,12 +2189,12 @@ do
 		inputbox_container.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		inputbox_container.BorderSizePixel = 0
 		inputbox_container.Position = UDim2.new(0.013, 0, 0.628, 0)
-		inputbox_container.Size = UDim2.new(0.7, 0, 0, 20)
+		inputbox_container.Size = self.description and UDim2.new(0.75, 0, 0, 45) or UDim2.new(0.75, 0, 0, 35)
 		inputbox_container.ZIndex = 2
 
 		local corner_radius = Instance.new("UICorner")
 		corner_radius.Parent = inputbox_container
-		corner_radius.CornerRadius = UDim.new(0, 2)
+		corner_radius.CornerRadius = UDim.new(0, 4)
 
 		inputbox_container.Destroying:Once(function()
 			self:_Destroy()
@@ -2031,9 +2203,70 @@ do
 		local stroke = Instance.new("UIStroke")
 		stroke.Parent = inputbox_container
 		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-		stroke.Thickness = 0.5
-		stroke.Color = Color3.fromRGB(24, 44, 48)
+		stroke.Thickness = 1
+		stroke.Color = Color3.fromRGB(68, 126, 139)
 		
+		local gradient = Instance.new("UIGradient")
+		gradient.Parent = inputbox_container
+		gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(0, 0, 0)), ColorSequenceKeypoint.new(0.49, Color3.fromRGB(16, 16, 16)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(0, 0, 0))}
+		
+		local padding = Instance.new("UIPadding")
+		padding.Parent = inputbox_container
+		padding.PaddingBottom = UDim.new(0, 7)
+		padding.PaddingLeft = UDim.new(0, 7)
+		padding.PaddingRight = UDim.new(0, 7)
+		padding.PaddingTop = UDim.new(0, 7)
+		
+		local label = Instance.new("TextLabel")
+		label.Parent = inputbox_container
+		label.AutomaticSize = Enum.AutomaticSize.X
+		label.AnchorPoint = Vector2.new(0, 0.5)
+		label.Name = "Label"
+		label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		label.BackgroundTransparency = 1.000
+		label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		label.BorderSizePixel = 0
+		label.Position = self.description and UDim2.new(0.4, 5, 0.3, 0) or UDim2.new(0.4, 5, 0.5, 0)
+		label.Size = UDim2.new(0, 0, 1, 0)
+		label.Font = Enum.Font.MontserratMedium
+		label.Text = self.label
+		label.TextColor3 = Color3.fromRGB(255, 255, 255)
+		label.TextSize = 14.000
+		label.TextXAlignment = Enum.TextXAlignment.Left
+
+		local text_size_ratio = Instance.new("UITextSizeConstraint")
+		text_size_ratio.Parent = label
+		text_size_ratio.MinTextSize = 1
+		text_size_ratio.MaxTextSize = 14
+		
+		if self.description then
+			local desc = Instance.new("TextLabel")
+			desc.Parent = inputbox_container
+			desc.AutomaticSize = Enum.AutomaticSize.X
+			desc.Name = "Desc"
+			desc.AnchorPoint = Vector2.new(0, 0.5)
+			desc.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			desc.BackgroundTransparency = 1.000
+			desc.BorderColor3 = Color3.fromRGB(0, 0, 0)
+			desc.BorderSizePixel = 0
+			desc.LayoutOrder = 1
+			desc.Position = UDim2.new(0.4, 5, 0.8, 0)
+			desc.Size = UDim2.new(0, 0, 1, 0)
+			desc.Font = Enum.Font.GothamMedium
+			desc.Text = self.description
+			desc.TextColor3 = Color3.fromRGB(173, 173, 173)
+			desc.TextScaled = true
+			desc.TextSize = 12.000
+			desc.TextWrapped = true
+			desc.TextTruncate = Enum.TextTruncate.AtEnd
+			desc.TextXAlignment = Enum.TextXAlignment.Left
+
+			local text_size_ratio2 = Instance.new("UITextSizeConstraint")
+			text_size_ratio2.Parent = desc
+			text_size_ratio2.MinTextSize = 12
+			text_size_ratio2.MaxTextSize = 12
+		end
+
 		self.input_box_outer_frame = inputbox_container
 		self.input_box_container = inputbox_container
 	end
@@ -2045,40 +2278,34 @@ do
 		local inputbox_frame = Instance.new("Frame")
 		inputbox_frame.Parent = self.input_box_container
 		inputbox_frame.Name = "Input"
-		inputbox_frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		inputbox_frame.BackgroundColor3 = Color3.fromRGB(21, 46, 54)
+		inputbox_frame.BackgroundTransparency = 0.5
 		inputbox_frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		inputbox_frame.BorderSizePixel = 0
-		inputbox_frame.Size = UDim2.new(0.7, 0, 1, 0)
-
-		local label = Instance.new("TextLabel")
-		label.Parent = inputbox_frame
-		label.Name = "Label"
-		label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-		label.BackgroundTransparency = 1.000
-		label.BorderColor3 = Color3.fromRGB(0, 0, 0)
-		label.BorderSizePixel = 0
-		label.Position = UDim2.new(1, 5, 0, 0)
-		label.Size = UDim2.new(0.3, 0, 1, 0)
-		label.Font = Enum.Font.MontserratMedium
-		label.Text = self.label
-		label.TextColor3 = Color3.fromRGB(255, 255, 255)
-		label.TextSize = 14.000
-		label.TextXAlignment = Enum.TextXAlignment.Left
-
-		local text_size_ratio = Instance.new("UITextSizeConstraint")
-		text_size_ratio.Parent = label
-		text_size_ratio.MinTextSize = 1
-		text_size_ratio.MaxTextSize = 14
+		inputbox_frame.Size = UDim2.new(0.4, 0, 1, 0)
 
 		local corner_radius = Instance.new("UICorner")
 		corner_radius.Parent = inputbox_frame
 		corner_radius.CornerRadius = UDim.new(0, 4)
 
-		local gradient = Instance.new("UIGradient")
-		gradient.Parent = inputbox_frame
-		gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(10, 14, 24)), ColorSequenceKeypoint.new(0.49, Color3.fromRGB(0, 0, 0)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(10, 14, 24))}
+		local stroke = Instance.new("UIStroke")
+		stroke.Parent = inputbox_frame
+		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		stroke.Color = Color3.fromRGB(255, 255, 255)
 		
-
+		local gradient = Instance.new("UIGradient")
+		gradient.Parent = stroke
+		gradient.Rotation = 70
+		gradient.Transparency = NumberSequence.new{
+			NumberSequenceKeypoint.new(0.00, 0.00), 
+			NumberSequenceKeypoint.new(0.51, 1.00), 
+			NumberSequenceKeypoint.new(1.00, 0.00)
+		}
+		gradient.Color = ColorSequence.new{
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(68, 126, 139)), 
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(68, 126, 139))
+		}
+		
 		local inputbox = Instance.new("TextBox")
 		inputbox.Parent = inputbox_frame
 		inputbox.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -2093,6 +2320,7 @@ do
 		inputbox.Text = self.value
 		inputbox.TextColor3 = Color3.fromRGB(255, 255, 255)
 		inputbox.TextSize = 14.000
+		inputbox.TextTruncate = Enum.TextTruncate.AtEnd
 		inputbox.ClipsDescendants = true
 
 		self:_StoreConn(inputbox:GetPropertyChangedSignal("Text"):Connect(function()
@@ -2107,6 +2335,7 @@ do
 				self:callback(self.value)
 			end
 		end))
+		
 
 		self.inputbox = inputbox
 		self.inputbox_frame = inputbox_frame
@@ -2141,11 +2370,12 @@ do
 		local label = Instance.new("Frame")
 		label.Parent = parent
 		label.Name = "Label"
+		label.AutomaticSize = Enum.AutomaticSize.Y
 		label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 		label.BackgroundTransparency = 1.000
 		label.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		label.BorderSizePixel = 0
-		label.Size = UDim2.new(0.5, 0, 0, 20)
+		label.Size = UDim2.new(1, 0, 0, 20)
 
 		label.Destroying:Once(function()
 			self:_Destroy()
@@ -2154,6 +2384,7 @@ do
 		local title = Instance.new("TextLabel")
 		title.Parent = label
 		title.Name = "Title"
+		title.AutomaticSize = Enum.AutomaticSize.Y
 		title.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 		title.BackgroundTransparency = 1.000
 		title.BorderColor3 = Color3.fromRGB(0, 0, 0)
@@ -2165,6 +2396,7 @@ do
 		title.TextSize = setting.TextSize
 		title.TextXAlignment = setting.TextXAlignment
 		title.TextYAlignment = setting.TextYAlignment
+		title.TextWrapped = true
 
 		self.label = label
 	end
@@ -2189,6 +2421,10 @@ local slider_class = table.create(8)
 slider_class.__index = slider_class
 
 do
+	function slider_class:GetValue()
+		return self.value
+	end
+	
 	function slider_class:SetValue(value)
 		self:_ChangeValue(value)
 		return self
@@ -2216,6 +2452,7 @@ do
 
 		self.stored_conn = nil
 		self.slider_container = nil
+		self.glow_image = nil
 		self.bar = nil
 		self.box = nil
 	end
@@ -2230,6 +2467,7 @@ do
 		self.callback = setting.Callback
 		self.value = setting.Value
 		self.format = setting.Decimal
+		self.smooth_drag = setting.SmoothDrag
 
 		local slider_container = Instance.new("Frame")
 		slider_container.Parent = parent
@@ -2238,7 +2476,24 @@ do
 		slider_container.BackgroundTransparency = 1.000
 		slider_container.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		slider_container.BorderSizePixel = 0
-		slider_container.Size = UDim2.new(1, 0, 0, 20)
+		slider_container.Size = UDim2.new(1, 0, 0, 35)
+		
+		local stroke = Instance.new("UIStroke")
+		stroke.Parent = slider_container
+		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		stroke.Thickness = 1
+		stroke.Color = Color3.fromRGB(68, 126, 139)
+		
+		local padding = Instance.new("UIPadding")
+		padding.Parent = slider_container
+		padding.PaddingBottom = UDim.new(0, 7)
+		padding.PaddingLeft = UDim.new(0, 7)
+		padding.PaddingRight = UDim.new(0, 7)
+		padding.PaddingTop = UDim.new(0, 7)
+		
+		local corner_radius = Instance.new("UICorner")
+		corner_radius.Parent = slider_container
+		corner_radius.CornerRadius = UDim.new(0, 4)
 
 		self.slider_container = slider_container
 	end
@@ -2254,13 +2509,31 @@ do
 		value = math.floor(value * shift + 0.5) / shift
 
 		self.value = value
-		self.counter_frame.Label.Text = self.value .. " " .. self.title
+		self.counter_frame.Label.Text = self.value
 
 		if self.callback then
 			self:callback(self.value)
 		end
+		
+		if not self.smooth_drag then
+			self.bar.Size = UDim2.new(percentage, 0, 1, 0)
+			return
+		end
+		
+		if self.smooth_tween then
+			self.smooth_tween:Cancel()
+			self.smooth_tween = nil
+		end
 
-		self.bar.Size = UDim2.new(percentage, 0, 1, 0)
+		self.smooth_tween = tween_service:Create(self.bar, TweenInfo.new(
+			0.25,
+			Enum.EasingStyle.Quad,
+			Enum.EasingDirection.Out
+			), {
+			Size = UDim2.new(percentage, 0, 1, 0)
+		})
+		
+		self.smooth_tween:Play()
 	end
 
 	function slider_class:_GetMouseValue(mouseX)
@@ -2272,18 +2545,15 @@ do
 		local box_edge = self.box.AbsolutePosition.X
 		local handle_width = self.handle_frame.AbsoluteSize.X
 
-		local min_pos = handle_width * 0.5
 		local max_pos = box_width - handle_width
 
-		local relative_x = mouseX - box_edge
-		relative_x = math.clamp(relative_x, min_pos, max_pos)
+		local relative_x = mouseX - box_edge - (handle_width / 2)
+		relative_x = math.clamp(relative_x, 0, max_pos)
 
-		local clamped = math.clamp(relative_x / box_width, 0, 1)
-
-		local alpha = helper_functions:InverseLerp(min_pos, max_pos, relative_x)
+		local alpha = helper_functions:InverseLerp(0, max_pos, relative_x)
 		local value = helper_functions:Lerp(minimum_value, maximum_value, alpha)
 
-		return clamped, value
+		return alpha, value
 	end
 
 	function slider_class:_GetSliderOffset(value, minimum_value, maximum_value)
@@ -2298,12 +2568,20 @@ do
 
 		self.value = value
 		self.bar.Size = UDim2.new(slider_class:_GetSliderOffset(self.value, self.min, self.max), 0, 1, 0)
-
-		self.counter_frame.Label.Text = self.value .. " " .. self.title
+		
+		self.counter_frame.Label.Text = self.value
 
 		if self.callback then
 			self:callback(self.value)
 		end
+	end
+	
+	function slider_class:UpdateMaximumValue(value)
+		if not self.counter_frame then return end
+		if not self.bar then return end
+		
+		self.max = value
+		self.bar.Size = UDim2.new(slider_class:_GetSliderOffset(self.value, self.min, self.max), 0, 1, 0)
 	end
 
 	function slider_class:_CreateSliderBar()
@@ -2312,18 +2590,18 @@ do
 		local box = Instance.new("TextButton")
 		box.Parent = self.slider_container
 		box.Name = "Box"
-		box.AnchorPoint = Vector2.new(0, 0.5)
+		box.AnchorPoint = Vector2.new(1, 0.5)
 		box.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 		box.Text = ""
 		box.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		box.BorderSizePixel = 0
-		box.Position = UDim2.new(0, 0, 0.5, 0)
-		box.Size = UDim2.new(0.8, 0, 0.5, 0)
+		box.BackgroundTransparency = 0.8
+		box.Position = UDim2.new(1, 0, 0.5, 0)
+		box.Size = UDim2.new(0.5, 0, 0.5, 0)
 		box.AutoButtonColor = false
 
-
 		local gradient = Instance.new("UIGradient")
-		gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(16, 24, 40)), ColorSequenceKeypoint.new(0.49, Color3.fromRGB(0, 0, 0)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(16, 24, 40))}
+		gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(68, 126, 139)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(68, 126, 139))}
 		gradient.Parent = box
 
 		local list_layout = Instance.new("UIListLayout")
@@ -2336,6 +2614,14 @@ do
 		padding.PaddingLeft = UDim.new(0, 4)
 		padding.PaddingRight = UDim.new(0, 4)
 		padding.PaddingTop = UDim.new(0, 2)
+		
+		local corner_radius = Instance.new("UICorner")
+		corner_radius.Parent = box
+		
+		local stroke = Instance.new("UIStroke")
+		stroke.Parent = box
+		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		stroke.Color = Color3.fromRGB(54, 146, 171)
 
 		local bar = Instance.new("Frame")
 		bar.Parent = box
@@ -2346,7 +2632,8 @@ do
 		bar.BorderSizePixel = 0
 		bar.Position = UDim2.new(0, 0, 0.5, 0)
 		bar.Size = UDim2.new(slider_class:_GetSliderOffset(self.value, self.min, self.max), 0, 1, 0)
-
+		
+		corner_radius:Clone().Parent = bar
 
 		local gradient_2 = Instance.new("UIGradient")
 		gradient_2.Parent = bar
@@ -2356,47 +2643,79 @@ do
 		local handle_frame = Instance.new("Frame")
 		handle_frame.Parent = bar
 		handle_frame.Name = "Handle"
-		handle_frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-		handle_frame.BackgroundTransparency = 0.500
+		handle_frame.BackgroundColor3 = Color3.fromRGB(56, 123, 144)
+		handle_frame.BackgroundTransparency = 0.250
 		handle_frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		handle_frame.BorderSizePixel = 0
-		handle_frame.AnchorPoint = Vector2.new(0, 0.5)
+		handle_frame.AnchorPoint = Vector2.new(0.5, 0.5)
 		handle_frame.Position = UDim2.new(1, 0, 0.5, 0)
-		handle_frame.Size = UDim2.new(0, 15, 0, 21)
+		handle_frame.Size = UDim2.new(0, 15, 0, 15)
 
 		local corner_radius = Instance.new("UICorner")
 		corner_radius.Parent = handle_frame
 
-		local gradient = Instance.new("UIGradient")
-		gradient.Parent = handle_frame
-		gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(24, 35, 59)), ColorSequenceKeypoint.new(0.50, Color3.fromRGB(13, 13, 13)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(24, 35, 59))}
-
 		local stroke = Instance.new("UIStroke")
 		stroke.Parent = handle_frame
 		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-		stroke.Color = Color3.fromRGB(27, 27, 27)
+		stroke.Color = Color3.fromRGB(96, 212, 247)
+		stroke.Thickness = 0.5
+		
+		local glow_image = Instance.new("ImageLabel")
+		glow_image.Parent = handle_frame
+		glow_image.AnchorPoint = Vector2.new(0.5, 0.5)
+		glow_image.Position = UDim2.new(0.5, 0, 0.5, 0)
+		glow_image.BackgroundTransparency = 1
+		glow_image.ImageTransparency = 0.25
+		glow_image.Size = UDim2.new(0, 0, 0, 0)
+		glow_image.Image = "rbxassetid://10891594349"
+		
+		local label = Instance.new("TextLabel")
+		label.Parent = self.slider_container
+		label.BackgroundTransparency = 1
+		label.Name = "Title"
+		label.Text = self.title
+		label.TextSize = 16
+		label.TextColor3 = Color3.fromRGB(255,255,255)
+		label.Size = UDim2.new(0.4,0,1,0)
+		label.Position = UDim2.new(0, 0, 0, 0)
+		label.Font = Enum.Font.MontserratMedium
+		label.TextScaled = true
+		label.TextStrokeTransparency = 0.75
+		label.TextXAlignment = Enum.TextXAlignment.Left
+
+		local text_size_ratio = Instance.new("UITextSizeConstraint")
+		text_size_ratio.Parent = label
+		text_size_ratio.MinTextSize = 1
+		text_size_ratio.MaxTextSize = 16
 
 		self:_StoreConn(box.InputBegan:Connect(function(input_obj)
-			if input_obj.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
+			if input_obj.UserInputType ~= Enum.UserInputType.MouseButton1 and input_obj.UserInputType ~= Enum.UserInputType.Touch then return end
+
+			tween_service:Create(self.glow_image, universal_tween, {Size = UDim2.new(1.5, 0, 1.5, 0)}):Play()
 
 			self.dragging = true
 			self:_Update(input_obj)
 		end))
 
 		self:_StoreConn(userinput_service.InputEnded:Connect(function(input_obj)
-			if input_obj.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
+			if (input_obj.UserInputType ~= Enum.UserInputType.MouseButton1 and input_obj.UserInputType ~= Enum.UserInputType.Touch) or not self.dragging then return end
+			
+			self.glow_image.Size = UDim2.new(3, 0, 3, 0)
+			tween_service:Create(self.glow_image, universal_tween, {Size = UDim2.new(0, 0, 0, 0)}):Play()
 
 			self.dragging = false
 		end))
 
 		self:_StoreConn(userinput_service.InputChanged:Connect(function(input_obj)
-			if not self.dragging or input_obj.UserInputType ~= Enum.UserInputType.MouseMovement then return end
+			if not self.dragging or (input_obj.UserInputType ~= Enum.UserInputType.MouseMovement and input_obj.UserInputType ~= Enum.UserInputType.Touch) then return end
 
 			self:_Update(input_obj)
 		end))
 
 		self.box = box
 		self.bar = bar
+		
+		self.glow_image = glow_image
 
 		self.handle_frame = handle_frame
 	end
@@ -2406,29 +2725,19 @@ do
 
 		local counter_frame = Instance.new("Frame")
 		counter_frame.Parent = self.slider_container
+		counter_frame.AutomaticSize = Enum.AutomaticSize.X
 		counter_frame.Name = "Counter"
-		counter_frame.AnchorPoint = Vector2.new(0.5, 0)
+		counter_frame.AnchorPoint = Vector2.new(1, 0)
 		counter_frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-		counter_frame.BackgroundTransparency = 0.300
+		counter_frame.BackgroundTransparency = 1
 		counter_frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		counter_frame.BorderSizePixel = 0
-		counter_frame.Position = UDim2.new(0.9, 5, 0, 0)
-		counter_frame.Size = UDim2.new(0.2, 0, 1, 0)
-
-		local corner_radius = Instance.new("UICorner")
-		corner_radius.Parent = counter_frame
-
-		local gradient_3 = Instance.new("UIGradient")
-		gradient_3.Parent = counter_frame
-		gradient_3.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(24, 35, 59)), ColorSequenceKeypoint.new(0.50, Color3.fromRGB(13, 13, 13)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(24, 35, 59))}
-
-		local stroke = Instance.new("UIStroke")
-		stroke.Parent = counter_frame
-
-		gradient_3:Clone().Parent = stroke
+		counter_frame.Position = UDim2.new(0.5, -5, 0, 0)
+		counter_frame.Size = UDim2.new(0, 0, 1, 0)
 
 		local Label = Instance.new("TextLabel")
 		Label.Parent = counter_frame
+		Label.AutomaticSize = Enum.AutomaticSize.X
 		Label.Name = "Label"
 		Label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 		Label.BackgroundTransparency = 1.000
@@ -2437,14 +2746,14 @@ do
 		Label.TextScaled = true
 		Label.Size = UDim2.new(1, 0, 1, 0)
 		Label.Font = Enum.Font.MontserratMedium
-		Label.Text = self.value .. " " .. self.title
-		Label.TextColor3 = Color3.fromRGB(255, 255, 255)
-		Label.TextSize = 14.000
+		Label.Text = self.value
+		Label.TextColor3 = Color3.fromRGB(156, 156, 156)
+		Label.TextSize = 11.000
 
 		local text_size_ratio = Instance.new("UITextSizeConstraint")
 		text_size_ratio.Parent = Label
 		text_size_ratio.MinTextSize = 1
-		text_size_ratio.MaxTextSize = 14
+		text_size_ratio.MaxTextSize = 11
 
 		self.counter_frame = counter_frame
 	end
@@ -2480,15 +2789,15 @@ do
 
 	function keybind_class:_ConvertKeycodeToText(keycode)
 		local raw = keycode.Name
-		return raw
+		return self.combination and table.concat(self.combination, " +") .. " + " .. raw or raw 
 	end
 	
 	function keybind_class:PassModifier()
 		if not self.combination then return true end
 		
 		local success = true
-		for key, _ in pairs(self.combination) do
-			if not userinput_service:IsKeyDown(key) then
+		for _, key in ipairs(self.combination) do
+			if not userinput_service:IsKeyDown(Enum.KeyCode[key]) then
 				success = false
 				break
 			end
@@ -2501,14 +2810,20 @@ do
 		if self.keybind_container then return end
 
 		self.value = setting.DefaultValue
-		self.combination = setting.Combination
-		warn(setting.Combination)
 		self.callback = setting.Callback
+
+		if setting.Combination then
+			self.combination = {}
+			for key, _ in pairs(setting.Combination) do
+				table.insert(self.combination, key.Name)
+			end
+		end
 
 		local keybind_container = Instance.new("Frame")
 		keybind_container.Parent = parent
 		keybind_container.Name = "Keybind"
-		keybind_container.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		keybind_container.BackgroundColor3 = Color3.fromRGB(21, 46, 54)
+		keybind_container.BackgroundTransparency = 0.5
 		keybind_container.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		keybind_container.BorderSizePixel = 0
 		keybind_container.Position = UDim2.new(0, 0, 0.831, 0)
@@ -2517,11 +2832,6 @@ do
 		keybind_container.Destroying:Connect(function()
 			self:_Destroy()
 		end)
-
-		local gradient = Instance.new("UIGradient")
-		gradient.Parent = keybind_container
-		gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(16, 24, 40)), ColorSequenceKeypoint.new(0.49, Color3.fromRGB(0, 0, 0)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(16, 24, 40))}
-
 
 		local label = Instance.new("TextLabel")
 		label.Parent = keybind_container
@@ -2560,17 +2870,34 @@ do
 
 		text_size_ratio:Clone().Parent = text_size_ratio
 
+		local corner_radius = Instance.new("UICorner")
+		corner_radius.Parent = keybind_container
+		corner_radius.CornerRadius = UDim.new(0, 4)
+
 		local stroke = Instance.new("UIStroke")
-		stroke.Parent = input_box
+		stroke.Parent = keybind_container
 		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-		stroke.Color = Color3.fromRGB(38, 50, 70)
+		stroke.Color = Color3.fromRGB(255, 255, 255)
+
+		local gradient = Instance.new("UIGradient")
+		gradient.Parent = stroke
+		gradient.Rotation = 70
+		gradient.Transparency = NumberSequence.new{
+			NumberSequenceKeypoint.new(0.00, 0.00), 
+			NumberSequenceKeypoint.new(0.51, 1.00), 
+			NumberSequenceKeypoint.new(1.00, 0.00)
+		}
+		gradient.Color = ColorSequence.new{
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(68, 126, 139)), 
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(68, 126, 139))
+		}
 
 		self:_StoreConn(input_box.MouseButton1Click:Connect(function()
 			if self.active then return end
 
 			self.new_value = nil
 			self.active = true
-
+			
 			while self.active do
 				input_box.Text = "..."
 				task.wait(0.5)
@@ -2618,7 +2945,7 @@ do
 		group_container.Size = UDim2.new(1, 0, 0, 0)
 		group_container.AutomaticSize = Enum.AutomaticSize.Y
 		group_container.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-		group_container.BackgroundTransparency = 0.400
+		group_container.BackgroundTransparency = 1
 		group_container.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		group_container.BorderSizePixel = 0
 
@@ -2627,9 +2954,6 @@ do
 		local list_layout = Instance.new("UIListLayout")
 		local gradient = Instance.new("UIGradient")
 		local stroke = Instance.new("UIStroke")
-
-		gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(16, 24, 40)), ColorSequenceKeypoint.new(0.49, Color3.fromRGB(0, 0, 0)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(16, 24, 40))}
-		gradient.Parent = group_container
 
 		corner_radius.Parent = group_container
 
@@ -2646,7 +2970,7 @@ do
 		stroke.Parent = group_container
 		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 		stroke.Transparency = 0.5
-		stroke.Color = Color3.fromRGB(35, 35, 35)
+		stroke.Color = Color3.fromRGB(57, 161, 209)
 
 		self.group_container = group_container
 	end
@@ -2701,14 +3025,15 @@ do
 	end
 
 	function pop_up_class:_CreatePopup(parent, setting)
-		if parent:FindFirstChild("popup_window") then return end
 		if self.popup_window then return end
 
 		self.title = setting.Title 
+		self.on_closed = setting.OnClose
 
 		local popup_window = Instance.new("Frame")
 		popup_window.Name = "popup_window"
 		popup_window.Parent = parent
+		popup_window.AutomaticSize = Enum.AutomaticSize.Y
 		popup_window.AnchorPoint = Vector2.new(0.5, 0.5)
 		popup_window.BackgroundColor3 = Color3.fromRGB(21, 46, 54)
 		popup_window.BackgroundTransparency = 0.350
@@ -2717,8 +3042,15 @@ do
 		popup_window.Active = true
 		popup_window.ClipsDescendants = true
 		popup_window.Position = UDim2.new(0.5, 0, 0.5, 0)
-		popup_window.Size = UDim2.new(0.5, 0, 0.5, 0)
-		popup_window.ZIndex = 3
+		popup_window.Size = UDim2.new(0.2, 0, 0, 0)
+		popup_window.ZIndex = 1
+		
+		local list_layout = Instance.new("UIListLayout")
+		list_layout.Parent = popup_window
+		list_layout.FillDirection = Enum.FillDirection.Vertical
+		list_layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+		list_layout.SortOrder = Enum.SortOrder.LayoutOrder
+		list_layout.VerticalAlignment = Enum.VerticalAlignment.Top
 
 		local corner_radius = Instance.new("UICorner")
 		corner_radius.Parent = popup_window
@@ -2748,7 +3080,7 @@ do
 		if self.title_bar then return end
 		if not self.popup_window then return end
 
-		local title_bar = Instance.new("Frame")
+		local title_bar = Instance.new("TextButton")
 		title_bar.Name = "TitleBar"
 		title_bar.Parent = self.popup_window
 		title_bar.BackgroundColor3 = Color3.fromRGB(16, 20, 26)
@@ -2757,9 +3089,10 @@ do
 		title_bar.BorderSizePixel = 0
 		title_bar.ClipsDescendants = true
 		title_bar.LayoutOrder = -1
-		title_bar.Position = UDim2.new(0, 0, -0.002, 0)
-		title_bar.Size = UDim2.new(1, 0, 0.185, 0)
+		title_bar.Position = UDim2.new(0, 0, 0, 0)
+		title_bar.Size = UDim2.new(1, 0, 0, 40)
 		title_bar.ZIndex = 2
+		title_bar.Text = ""
 
 		local padding = Instance.new("UIPadding")
 		padding.Parent = title_bar
@@ -2792,6 +3125,7 @@ do
 		close_btn.Parent = management_frame
 		close_btn.AnchorPoint = Vector2.new(0, 0.5)
 		close_btn.BackgroundColor3 = Color3.fromRGB(13, 19, 26)
+		close_btn.BackgroundTransparency = 1
 		close_btn.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		close_btn.BorderSizePixel = 0
 		close_btn.LayoutOrder = 1
@@ -2818,15 +3152,22 @@ do
 		local corner = Instance.new("UICorner")
 		corner.Parent = close_btn
 
-		local content = Instance.new("Frame")
+		local content = Instance.new("ScrollingFrame")
 		content.Name = "Content"
 		content.Parent = self.popup_window
+		content.AutomaticSize = Enum.AutomaticSize.Y
 		content.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 		content.BackgroundTransparency = 1.000
 		content.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		content.BorderSizePixel = 0
 		content.Position = UDim2.new(0, 0, 0.2, 0)
-		content.Size = UDim2.new(1, 0, 0.8, 0)
+		content.Size = UDim2.new(1, 0, 0, 0)
+		content.BottomImage = ""
+		content.MidImage = ""
+		content.TopImage = ""
+		content.AutomaticSize = Enum.AutomaticSize.Y
+		content.AutomaticCanvasSize = Enum.AutomaticSize.Y
+		content.CanvasSize = UDim2.new(0,0,2,0)
 
 		local padding_3 = Instance.new("UIPadding")
 		padding_3.Parent = content
@@ -2857,6 +3198,44 @@ do
 
 		self:_StoreConn(close_btn_img.MouseButton1Click:Once(function() 
 			self:_Destroy()
+			
+			if self.on_closed then
+				self.on_closed()
+			end
+		end))
+		
+		local dragging, drag_input, input_pos, start_pos
+
+		self:_StoreConn(title_bar.InputBegan:Connect(function(input)
+			if not self.popup_window then return end
+			
+			if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then return end
+
+			dragging = true
+			input_pos = input.Position
+			start_pos = self.popup_window.Position
+		end))
+
+		self:_StoreConn(title_bar.InputEnded:Connect(function(input)
+			if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then return end
+
+			dragging = nil
+		end))
+
+		self:_StoreConn(userinput_service.InputChanged:Connect(function(input)
+			if not dragging or not self.popup_window then return end
+			if input.UserInputType ~= Enum.UserInputType.MouseMovement and input.UserInputType ~= Enum.UserInputType.Touch then
+				return
+			end
+
+			local delta = input.Position - input_pos
+
+			self.popup_window.Position = UDim2.new(
+				start_pos.X.Scale, 
+				start_pos.X.Offset + delta.X,
+				start_pos.Y.Scale, 
+				start_pos.Y.Offset + delta.Y
+			)
 		end))
 
 		self.title_bar = title_bar
@@ -2868,27 +3247,143 @@ local settings_class = table.create(8)
 settings_class.__index = settings_class
 
 do
-	function settings_class:_InjectIcon(parent, setting)
+	function settings_class:_StoreConn(conn)
+		return helper_functions:_StoreConn(self.stored_conn, conn)
+	end
+	
+	
+	
+	function settings_class:_ShowOptions(pos)
+		if core_ui_manager.safe_gui:FindFirstChild("Options") then return end 
+		
+		local options = Instance.new("Frame")
+		local corner_radius = Instance.new("UICorner")
+		local list_layout = Instance.new("UIListLayout")
+		local padding = Instance.new("UIPadding")
+		local stroke = Instance.new("UIStroke")
+		
+		options.Name = "Options"
+		options.Parent = core_ui_manager.safe_gui
+		options.AutomaticSize = Enum.AutomaticSize.Y
+		options.AnchorPoint = Vector2.new(0, 0)
+		options.BackgroundColor3 = Color3.fromRGB(21, 46, 54)
+		options.BackgroundTransparency = 0.5
+		options.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		options.BorderSizePixel = 0
+		options.Position = pos
+		options.Size = UDim2.new(0, 0, 0, 0)
+		
+		tween_service:Create(options, universal_tween, {Size = UDim2.new(0.15, 0, 0, 0)}):Play()
+
+		corner_radius.Parent = options
+
+		list_layout.Parent = options
+		list_layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+		list_layout.SortOrder = Enum.SortOrder.LayoutOrder
+		
+		padding.Parent = options
+		padding.PaddingBottom = UDim.new(0, 10)
+		padding.PaddingLeft = UDim.new(0, 10)
+		padding.PaddingRight = UDim.new(0, 10)
+		padding.PaddingTop = UDim.new(0, 10)
+		
+		stroke.Parent = options
+		stroke.Color = Color3.fromRGB(68, 126, 139)
+		
+		
+		for name, func in pairs(self.options) do
+			local option = Instance.new("TextButton")
+			local label = Instance.new("TextLabel")
+			
+			option.Name = name
+			option.Parent = options
+			option.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			option.BackgroundTransparency = 1.000
+			option.BorderColor3 = Color3.fromRGB(0, 0, 0)
+			option.BorderSizePixel = 0
+			option.Size = UDim2.new(1, 0, 0.2, 0)
+			option.Text = ""
+			
+			corner_radius:Clone().Parent = option
+
+			label.Name = "Label"
+			label.Parent = option
+			label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			label.BackgroundTransparency = 1.000
+			label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+			label.BorderSizePixel = 0
+			label.Size = UDim2.new(1, 0, 1, 0)
+			label.Font = Enum.Font.Arial
+			label.Text = name
+			label.TextColor3 = Color3.fromRGB(255, 255, 255)
+			label.TextSize = 14.000
+			label.TextXAlignment = Enum.TextXAlignment.Left
+			
+			option.MouseButton1Click:Once(function()
+				if not func or typeof(func) ~= "function" then return end
+				
+				options:Destroy()
+				func()
+			end)
+			
+			self:_StoreConn(userinput_service.InputBegan:Connect(function(input, gp)
+				if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then 
+					return
+				end
+				
+				if helper_functions:IsClickInUI(options, input.Position) then return end
+				
+				options:Destroy()
+			end))
+			
+			self:_StoreConn(option.MouseEnter:Connect(function()
+				tween_service:Create(option, universal_tween,
+					{BackgroundTransparency = 0.9}
+				):Play()
+			end))
+			
+			self:_StoreConn(option.MouseLeave:Connect(function()
+				tween_service:Create(option, universal_tween,
+					{BackgroundTransparency = 1}
+				):Play()
+			end))
+		end
+	end
+	
+	function settings_class:_InjectBtn(parent, setting)
 		if self.setting_icon then return end
 
-		self.callback = setting.Callback
+		self.options = setting
 
-		local setting_icon = Instance.new("ImageButton")
+		local setting_icon = Instance.new("TextButton")
 		setting_icon.Parent = parent
 		setting_icon.Name = "Setting"
 		setting_icon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-		setting_icon.BackgroundTransparency = 1.000
+		setting_icon.BackgroundTransparency = 0.95
 		setting_icon.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		setting_icon.BorderSizePixel = 0
-		setting_icon.Size = UDim2.new(1, 0, 1, 0)
-		setting_icon.Image = "rbxassetid://1402032193"
+		setting_icon.Size = UDim2.new(0.8, 0, 1, 0)
+		setting_icon.Text = ""
+		setting_icon.AutoButtonColor = false
+		
+		local corner_radius = Instance.new("UICorner")
+		corner_radius.Parent = setting_icon
 
-		local ratio = Instance.new("UIAspectRatioConstraint")
-		ratio.Parent = setting_icon
+		self:_StoreConn(setting_icon.MouseButton2Click:Connect(function()
+			local mouse_location = userinput_service:GetMouseLocation()
+			local target_pos = helper_functions:ConvertToScale(UDim2.new(0, mouse_location.X, 0, mouse_location.Y))
+			
+			self:_ShowOptions(target_pos)
+		end))
+				
+		self:_StoreConn(setting_icon.TouchLongPress:Connect(function(pos, state)
+			if state ~= Enum.UserInputState.Begin then return end
+			
+			local mouse_location = pos[1]
+			local target_pos = helper_functions:ConvertToScale(UDim2.new(0, mouse_location.X, 0, mouse_location.Y))
 
-		setting_icon.MouseButton1Click:Connect(function()
-			self:callback()
-		end)
+			self:_ShowOptions(target_pos)
+		end))
 
 		self.setting_icon = setting_icon
 	end
@@ -2896,17 +3391,59 @@ end
 
 local notify_class = table.create(8)
 notify_class.__index = notify_class
+setmetatable(notify_class, { __index = container_base })
 
 do
+	function notify_class:GetBase()
+		return self.element_container
+	end
+	
+	function notify_class:GetFrame()
+		return self.notify_container
+	end
+	
+	function notify_class:_StoreConn(conn)
+		return helper_functions:_StoreConn(self.stored_conn, conn)
+	end
+	
+	function notify_class:_RemoveIndex()
+		if not self.notify_container then return end
+		
+		local tbl = notification_manager.frames
+		local index = table.find(tbl, self)
+		
+		if index then
+			table.remove(tbl, index)
+		end
+	end
+	
 	function notify_class:_Destroy()
 		if not self or self.Destroyed then return end
 		self.Destroyed = true
+		
+		self:_RemoveIndex()
 		
 		if self.notify_container then
 			self.notify_container:Destroy()
 		end
 		
 		self.notify_container = nil
+		notification_manager:Reposition()
+	end
+	
+	function notify_class:Retract()
+		if not self.notify_container then return end
+		
+		local target_pos = self.notify_container.Position + UDim2.new(1.5, 0, 0, 0)
+		
+		local retract_tween = tween_service:Create(self.notify_container, universal_tween, 
+			{Position = target_pos}
+		)
+		
+		retract_tween:Play()
+		retract_tween.Completed:Once(function()
+			self:_Destroy()
+		end)
 	end
 	
 	function notify_class:_CreateContainer(parent, setting)
@@ -2914,23 +3451,34 @@ do
 		
 		self.title = setting.Title
 		self.details = setting.Description
-		self.duration = setting.Duration
 		
-		local notify_container = Instance.new("Frame")
+		local notify_container = Instance.new("TextButton")
 		notify_container.Parent = parent
+		notify_container.AutomaticSize = Enum.AutomaticSize.Y
 		notify_container.Name = "notify"
 		notify_container.BackgroundColor3 = Color3.fromRGB(34, 75, 88)
 		notify_container.BackgroundTransparency = 0.500
 		notify_container.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		notify_container.BorderSizePixel = 0
-		notify_container.Size = UDim2.new(1, 0, 0, 0)
-				
-		tween_service:Create(notify_container, universal_tween, {Size = UDim2.new(1, 0, 0, 100)}):Play()
+		notify_container.AnchorPoint = Vector2.new(1, 1)
+		notify_container.Position = UDim2.new(2, 0, 1, 0)
+		notify_container.Size = UDim2.new(1, 0, 0, 75)
+		notify_container.Text = ""
+		notify_container.AutoButtonColor = false	
+						
+		tween_service:Create(notify_container, universal_tween, {Position = UDim2.new(1, 0, 1, 0)}):Play()
 		
 		local corner_radius = Instance.new("UICorner")
-		corner_radius.CornerRadius = UDim.new(0, 6)
+		corner_radius.CornerRadius = UDim.new(0, 10)
 		corner_radius.Parent = notify_container
 		
+		local padding = Instance.new("UIPadding")
+		padding.Parent = notify_container
+		padding.PaddingBottom = UDim.new(0, 5)
+		padding.PaddingLeft = UDim.new(0, 10)
+		padding.PaddingRight = UDim.new(0, 10)
+		padding.PaddingTop = UDim.new(0, 5)
+
 		local stroke = Instance.new("UIStroke")
 		stroke.Parent = notify_container
 		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
@@ -2946,28 +3494,98 @@ do
 		gradient.Color = ColorSequence.new{
 			ColorSequenceKeypoint.new(0, Color3.fromRGB(68, 126, 139)), 
 			ColorSequenceKeypoint.new(1, Color3.fromRGB(68, 126, 139))
-		}		gradient.Rotation = 86
+		}		
+		gradient.Rotation = 90
+		
+		local list_layout = Instance.new("UIListLayout")
+		list_layout.Parent = notify_container
+		list_layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+		list_layout.VerticalAlignment = Enum.VerticalAlignment.Top
+		list_layout.SortOrder = Enum.SortOrder.LayoutOrder
+		
+		local element_container = Instance.new("Frame")
+		element_container.Parent = notify_container
+		element_container.Name = "Elements"
+		element_container.AutomaticSize = Enum.AutomaticSize.Y
+		element_container.LayoutOrder = 3
+		element_container.AnchorPoint = Vector2.new(0, 0.5)
+		element_container.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		element_container.BackgroundTransparency = 1.000
+		element_container.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		element_container.BorderSizePixel = 0
+		element_container.Position = UDim2.new(0, 0, 1, 0)
+		element_container.Size = UDim2.new(1, 0, 0, 0)
+		
+		local list_layout2 = Instance.new("UIListLayout")
+		list_layout2.Parent = notify_container
+		list_layout2.HorizontalAlignment = Enum.HorizontalAlignment.Center
+		list_layout2.VerticalAlignment = Enum.VerticalAlignment.Top
+		list_layout2.SortOrder = Enum.SortOrder.LayoutOrder
+		list_layout2.Padding = UDim.new(0, 5)
+		list_layout2.FillDirection = setting.ElementFillDirection
+		
 		
 		self.notify_container = notify_container
+		self.element_container = element_container
+		
+		
+		self:_StoreConn(self.notify_container.MouseEnter:Connect(function()
+			if not self.notify_container then return end
+
+			tween_service:Create(
+				self.notify_container,
+				universal_tween,
+				{BackgroundTransparency = 0.4}
+			):Play()
+
+			tween_service:Create(
+				self.notify_container,
+				universal_tween,
+				{BackgroundColor3 = Color3.fromRGB(57, 104, 118)}
+			):Play()
+
+		end))
+
+		self:_StoreConn(self.notify_container.MouseLeave:Connect(function()
+			if not self.notify_container then return end
+
+			tween_service:Create(
+				self.notify_container,
+				universal_tween,
+				{BackgroundTransparency = 0.500}
+			):Play()
+
+			tween_service:Create(
+				self.notify_container,
+				universal_tween,
+				{BackgroundColor3 = Color3.fromRGB(34, 75, 88)}
+			):Play()
+		end))
+		
+		self:_StoreConn(self.notify_container.MouseButton1Click:Connect(function()
+			if not self.notify_container then return end
+
+			self.notify_container.BackgroundColor3 = Color3.fromRGB(45, 100, 117)
+			self.notify_container.BackgroundTransparency = 0.2
+
+			tween_service:Create(
+				self.notify_container,
+				universal_tween,
+				{BackgroundTransparency = 0.500}
+			):Play()
+
+			tween_service:Create(
+				self.notify_container,
+				universal_tween,
+				{BackgroundColor3 = Color3.fromRGB(34, 75, 88)}
+			):Play()
+
+			self:Retract()
+		end))
 	end
 	
 	function notify_class:_CreateContent()
 		if not self.notify_container then return end
-		
-		local glow = Instance.new("ImageLabel")
-		glow.Name = "glow"
-		glow.Parent = self.notify_container
-		glow.AnchorPoint = Vector2.new(0.5, 0.5)
-		glow.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-		glow.BackgroundTransparency = 1.000
-		glow.BorderColor3 = Color3.fromRGB(0, 0, 0)
-		glow.BorderSizePixel = 0
-		glow.Position = UDim2.new(0.5, 0, 0.5, 0)
-		glow.Size = UDim2.new(2, 0, 2, 0)
-		glow.ZIndex = -1
-		glow.Image = "rbxassetid://5538771868"
-		glow.ImageColor3 = Color3.fromRGB(121, 230, 255)
-		glow.ImageTransparency = 0.850
 
 		local title = Instance.new("TextLabel")
 		title.Name = "title"
@@ -2979,9 +3597,11 @@ do
 		title.Size = UDim2.new(1, 0, 0, 25)
 		title.Font = Enum.Font.Gotham
 		title.Text = self.title
+		title.LayoutOrder = 1
 		title.TextColor3 = Color3.fromRGB(255, 255, 255)
-		title.TextSize = 16.000
+		title.TextSize = 14.000
 		title.TextWrapped = true
+		title.TextXAlignment = Enum.TextXAlignment.Left
 
 		local details = Instance.new("TextLabel")
 		details.Name = "details"
@@ -2990,65 +3610,165 @@ do
 		details.BackgroundTransparency = 1.000
 		details.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		details.BorderSizePixel = 0
+		details.LayoutOrder = 1
 		details.AutomaticSize = Enum.AutomaticSize.Y
-		details.Position = UDim2.new(0, 0, 0.3, 0)
+		details.Position = UDim2.new(0, 0, 0.4, 0)
 		details.Size = UDim2.new(1, 0, 0, 0)
 		details.Font = Enum.Font.Gotham
 		details.Text = self.details
-		details.TextColor3 = Color3.fromRGB(255, 255, 255)
-		details.TextSize = 16.000
+		details.TextColor3 = Color3.fromRGB(176, 176, 176)
+		details.TextSize = 12.000
 		details.TextWrapped = true
-		details.TextXAlignment = Enum.TextXAlignment.Center
+		details.TextXAlignment = Enum.TextXAlignment.Left
 		details.TextYAlignment = Enum.TextYAlignment.Top
-		
-		local padding = Instance.new("UIPadding")
-		padding.Parent = details
-		padding.PaddingLeft = UDim.new(0, 5)
-		padding.PaddingRight = UDim.new(0, 5)
+	end
+end
+
+--[[
+instance_class | one in all
+
+this is supposed to let you insert elements and text into it acting as a mini-mini window
+
+apis
+
+settext
+inserttext
+clear
+
+additional features
+
+scrolltobottom
+readonly
+
+
+]]
+
+local instance_class = table.create(8)
+instance_class.__index = instance_class
+setmetatable(instance_class, { __index = container_base })
+
+do
+	function instance_class:GetBase()
+		return self.instance
 	end
 	
-	function notify_class:_CreateBar()
-		if not self.notify_container then return end
+	function instance_class:SetText(str)
+		local base = self.instance.Base
+
+		base.Text = str
+		return self
+	end
+	
+	function instance_class:InsertText(str)
+		local base = self.instance.Base
 		
-		local bar = Instance.new("Frame")
-		bar.Name = "Bar"
-		bar.Parent = self.notify_container
-		bar.AnchorPoint = Vector2.new(0, 1)
-		bar.BackgroundColor3 = Color3.fromRGB(21, 46, 54)
-		bar.BackgroundTransparency = 0.8
-		bar.BorderColor3 = Color3.fromRGB(0, 0, 0)
-		bar.BorderSizePixel = 0
-		bar.Position = UDim2.new(0, 0, 1, 0)
-		bar.Size = UDim2.new(0, 0, 0, 7.5)
+		base.Text = base.Text .. ("\n") .. str
+		return self
+	end
+	
+	function instance_class:InsertInstance(instance)
+		instance.Parent = self.instance
+		return self
+	end
+	
+	function instance_class:Clear()
+		local base = self.instance.Base
+		base.Text = ""
+		return self
+	end
+
+	function instance_class:_Destroy()
+		if not self or self.Destroyed then return end
+
+		if self.on_changed then
+			self.on_changed:Disconnect()
+		end
+		
+		if self.instance then
+			pcall(function()
+				self.instance:Destroy()
+			end)
+		end
+		
+		self.instance = nil
+		self.on_changed = nil
+	end
+	
+	function instance_class:_OnChange(text)		
+		if self.scroll_bottom then 
+			self:_ScrollToBottom()
+		end 
+	end
+	
+	function instance_class:_ScrollToBottom()
+		if not self.instance then return end
+		local instance = self.instance
+		
+		instance.CanvasPosition = Vector2.new(0, instance.AbsoluteCanvasSize.Y - instance.AbsoluteSize.Y)
+	end
+	
+	function instance_class:_CreateInstance(parent, setting)
+		if self.instance then return end
+		
+		local instance_container = Instance.new("ScrollingFrame")
+		instance_container.Parent = parent
+		instance_container.Name = "Instance"
+		instance_container.Active = true
+		instance_container.BackgroundColor3 = Color3.fromRGB(21, 46, 54)
+		instance_container.BackgroundTransparency = 0.500
+		instance_container.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		instance_container.BorderSizePixel = 0
+		instance_container.Size = UDim2.new(1, 0, 0, 140)
+		instance_container.BottomImage = ""
+		instance_container.CanvasPosition = Vector2.new(0, 0)
+		instance_container.AutomaticCanvasSize = Enum.AutomaticSize.Y
+		instance_container.CanvasSize = UDim2.new(0, 0, 0, 0)
+		instance_container.MidImage = ""
+		instance_container.TopImage = ""
 		
 		local corner_radius = Instance.new("UICorner")
-		corner_radius.CornerRadius = UDim.new(0, 6)
-		corner_radius.Parent = bar
+		corner_radius.Parent = instance_container
+		
+		local list_layout = Instance.new("UIListLayout")
+		list_layout.Parent = instance_container
+		list_layout.SortOrder = Enum.SortOrder.LayoutOrder
 		
 		local stroke = Instance.new("UIStroke")
-		stroke.Parent = bar
-		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-		stroke.Color = Color3.fromRGB(255, 255, 255)
-
-		local gradient = Instance.new("UIGradient")
-		gradient.Parent = stroke
-		gradient.Transparency = NumberSequence.new{
-			NumberSequenceKeypoint.new(0.00, 0.00), 
-			NumberSequenceKeypoint.new(0.51, 1.00), 
-			NumberSequenceKeypoint.new(1.00, 0.00)
-		}
-		gradient.Color = ColorSequence.new{
-			ColorSequenceKeypoint.new(0, Color3.fromRGB(68, 126, 139)), 
-			ColorSequenceKeypoint.new(1, Color3.fromRGB(68, 126, 139))
-		}		
-		gradient.Rotation = 86
-
-		local bar_tween = tween_service:Create(bar, TweenInfo.new(self.duration, Enum.EasingStyle.Linear), {Size = UDim2.new(1, 0, 0, 7.5)})
-		bar_tween:Play()
-		bar_tween.Completed:Wait()
+		stroke.Parent = instance_container
+		stroke.Color = Color3.fromRGB(68, 126, 139)
 		
-		self:_Destroy()
+		local base = Instance.new("TextBox")
+		base.Parent = instance_container
+		base.Name = "Base"
+		base.AutomaticSize = Enum.AutomaticSize.Y
+		base.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		base.BackgroundTransparency = 1.000
+		base.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		base.BorderSizePixel = 0
+		base.Size = UDim2.new(1, 0, 0, 0)
+		base.ClearTextOnFocus = false
+		base.Font = Enum.Font.Michroma
+		base.Text = setting.Text
+		base.TextColor3 = Color3.fromRGB(255, 255, 255)
+		base.TextSize = 12.000
+		base.RichText = true
+		base.TextWrapped = true
+		base.TextEditable = not setting.ReadOnly
+		base.TextXAlignment = Enum.TextXAlignment.Left
+		base.TextYAlignment = Enum.TextYAlignment.Top
+
+		local padding = Instance.new("UIPadding")
+		padding.Parent = base
+		padding.PaddingBottom = UDim.new(0, 5)
+		padding.PaddingLeft = UDim.new(0, 5)
+		padding.PaddingRight = UDim.new(0, 5)
+		padding.PaddingTop = UDim.new(0, 5)
 		
+		self.instance = instance_container
+		self.scroll_bottom = setting.AutoScroll
+		self.on_changed = base:GetPropertyChangedSignal("Text"):Connect(function()
+			self:_OnChange()
+		end)
 	end
 end
 
@@ -3066,7 +3786,7 @@ core_ui_manager = {} do
 			safe_gui.Name = "ZYVIX"
 			safe_gui.ResetOnSpawn = false
 			safe_gui.IgnoreGuiInset = true
-			safe_gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+			safe_gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
 			self.safe_gui = safe_gui
 		else
 			print("Critical error: no suitable parent found")
@@ -3088,7 +3808,7 @@ core_ui_manager = {} do
 		window_obj:_CreateContentFrame()
 		window_obj:_CreateTitlebar(setting)
 
-		if setting.management_btns then
+		if setting.ManagementButtons then
 			window_obj:_CreateManagementButtons()
 		end
 
@@ -3116,6 +3836,7 @@ core_ui_manager = {} do
 		local section_obj = setmetatable({}, section_class)
 
 		section_obj:_CreateScrollingCanvas(parent, setting)
+		section_obj:_CreateGlow()
 		section_obj:_CreateSection(setting)
 
 		return section_obj
@@ -3218,29 +3939,75 @@ core_ui_manager = {} do
 	end
 	function core_ui_manager:coreInjectSetting(parent, setting)
 		local setting_obj = setmetatable({}, settings_class)
+		setting_obj.stored_conn = table.create(2)
 
-		setting_obj:_InjectIcon(parent, setting)
+		setting_obj:_InjectBtn(parent, setting)
 
 		return setting_obj
 	end
 	
 	function core_ui_manager:coreNotify(parent, setting)
 		local notify_obj = setmetatable({}, notify_class)
+		notify_obj.stored_conn = table.create(3)
 		
 		notify_obj:_CreateContainer(parent, setting)
 		notify_obj:_CreateContent()
-		notify_obj:_CreateBar()
+		
+		return notify_obj
+	end
+	
+	function core_ui_manager:coreCreateInstance(parent, setting)
+		local instance_obj = setmetatable({}, instance_class)
+		
+		instance_obj:_CreateInstance(parent, setting)
+		
+		return instance_obj
+	end
+end
+
+notification_manager = {
+	frames = table.create(8),
+	tweens = {}
+}
+do
+	setmetatable(notification_manager.frames, { __mode = "v" })
+	
+	function notification_manager:Reposition()
+		for i, frame in ipairs(self.frames) do
+			local base = frame:GetFrame()
+			if not base then continue end
+
+			local target_y = (i - 1) * (base.AbsoluteSize.Y + 10)
+
+			tween_service:Create(base, universal_tween,
+				{Position = UDim2.new(1, 0, 1, -target_y)}
+			):Play()
+		end
+	end
+
+	function notification_manager:Notify(parent, setting)
+		local notify_obj = core_ui_manager:coreNotify(parent, setting)
+		
+		table.insert(self.frames, 1, notify_obj)
+		self:Reposition()
+		
+		task.defer(function()
+			task.wait(setting.Duration)
+						
+			notify_obj:Retract()
+		end)
 		
 		return notify_obj
 	end
 end
+
 
 helper_functions = {} do
 	function helper_functions:SetConfig(default, setting)
 		setting = setting or {}
 
 		for i, v in next, default do
-			if not setting[i] then
+			if setting[i] == nil then
 				setting[i] = v
 			end
 		end
@@ -3273,10 +4040,6 @@ helper_functions = {} do
 		return nil
 	end
 
-	function helper_functions:DestroyElement()
-
-	end
-
 	function helper_functions:InverseLerp(min, max, value)
 		if min == max then return 0 end
 
@@ -3285,6 +4048,90 @@ helper_functions = {} do
 
 	function helper_functions:Lerp(start_val, end_val, alpha)
 		return start_val + (end_val - start_val) * alpha
+	end
+	
+	function helper_functions:IsClickInUI(frame, input)
+		local abs_pos = frame.AbsolutePosition
+		local abs_size = frame.AbsoluteSize
+		
+		local xCheck = input.X >= abs_pos.X and input.X <= (abs_pos.X + abs_size.X)
+		local yCheck = input.Y >= abs_pos.Y and input.Y <= (abs_pos.Y + abs_size.Y)
+
+		return xCheck and yCheck
+	end
+	
+	function helper_functions:ConvertToScale(offset)
+		local viewport_size = workspace.CurrentCamera.ViewportSize
+		
+		--offset.X.Offset / viewport_size.X, offset.Y.Offset / viewport_size.Y
+		--offset.X.Offset / 1327, offset.Y.Offset / 614
+		
+		--1
+		
+		local x = debugging and offset.X.Offset / 1327 or offset.X.Offset / viewport_size.X
+		local y = debugging and offset.Y.Offset / 614 or offset.Y.Offset / viewport_size.Y
+
+		return UDim2.fromScale(
+			x, y
+		)
+	end
+end
+
+--[[
+
+save service | a helper ultity
+
+
+
+
+
+]]
+
+save_service = {
+	setting = table.create(8)
+}
+do
+	function save_service:AddFlag(flag, element)
+		self.setting[flag] = element
+	end
+	
+	function save_service:ExtractData(class)
+		local int = {}
+		
+		int["value"] = class["value"]
+		
+		return int
+	end
+	
+	function save_service:Sterilize()
+		local parsed_json = {}
+		
+		for name, element in next, self.setting do
+			parsed_json[name] = self:ExtractData(element)
+		end
+		
+		return parsed_json
+	end
+	
+	function save_service:LoadIntoElement(element, value)
+		if element.SetValue then
+			element:SetValue(value)
+		end
+		
+		element["Value"] = value
+	end
+	
+	function save_service:LoadData(data)
+		if typeof(data) == "string" then
+			data = http_service:JSONDecode(data)
+		end
+		
+		for name, value in next, data do
+			local element = self.setting[name]
+			if not element then continue end
+			
+			self:LoadIntoElement(element, value.value)
+		end
 	end
 end
 
@@ -3307,9 +4154,10 @@ function ZYVIX:CreateWindow(setting)
 		Title = "ZYVIX",
 		Position = UDim2.new(0.5, 0, 0.5, -200),
 		Size = UDim2.new(0, 800, 0, 450),
-		icon_id = "rbxassetid://74606228102976",
-		management_btns = true,
+		IconId = "rbxassetid://74606228102976",
+		ManagementButtons = true,
 		Collapsed = false,
+		SmoothDrag = true,
 	}, setting)
 
 	local object = core_ui_manager:coreCreateWindow(setting)
@@ -3322,6 +4170,19 @@ function ZYVIX:CreateWindow(setting)
 
 	return object
 end
+
+function ZYVIX:SaveData()
+	return save_service:Sterilize()
+end
+
+function ZYVIX:SaveElement(name, element)
+	save_service:AddFlag(name, element)
+end
+
+function ZYVIX:LoadData(data)
+	save_service:LoadData(data)
+end
+
 
 ZYVIX:InjectElement("Tablist", function(parent)
 	local tab_list_main = core_ui_manager:coreCreateTablist(parent:GetBase())
@@ -3371,6 +4232,7 @@ ZYVIX:InjectElement("Checkbox", function(parent, setting)
 		Label = "nil",
 		Value = false,
 		State = true, -- optional
+		description = nil,
 		Callback = function(self, value)
 			print("Checkbox pressed!", value)
 		end,
@@ -3443,7 +4305,7 @@ ZYVIX:InjectElement("Label", function(parent, setting)
 		Text = "Section2",
 		TextSize = 14.000,
 		TextXAlignment = Enum.TextXAlignment.Left,
-		TextYAlignment = Enum.TextYAlignment.Center,
+		TextYAlignment = Enum.TextYAlignment.Top,
 
 	}, setting)
 
@@ -3461,6 +4323,7 @@ ZYVIX:InjectElement("Slider", function(parent, setting)
 		Maximum = 100,
 		Value = 25,
 		Decimal = ".0",
+		SmoothDrag = true,
 		Callback = function(self, value)
 			print(value)
 		end,
@@ -3492,12 +4355,15 @@ ZYVIX:InjectElement("Keybind", function(parent, setting)
 	return keybind_obj
 end)
 
-ZYVIX:InjectElement("MiniWindow", function(parent, setting)
+ZYVIX:InjectElement("PopupWindow", function(parent, setting)
 	setting = helper_functions:SetConfig({
-		Title = "nil"
+		Title = "nil",
+		OnClose = function()
+			print("Closed")
+		end,
 	}, setting)	
 
-	local pop_up_obj = core_ui_manager:coreCreatePopup(parent:GetContainer(), setting)
+	local pop_up_obj = core_ui_manager:coreCreatePopup(core_ui_manager.safe_gui, setting)
 
 	pop_up_obj._CreatePopup = nil
 	pop_up_obj._CreateTitleBar = nil
@@ -3506,15 +4372,9 @@ ZYVIX:InjectElement("MiniWindow", function(parent, setting)
 end)
 
 ZYVIX:InjectElement("InjectSetting", function(parent, setting)
-	setting = helper_functions:SetConfig({
-		Callback = function()
-			print("touched")
-		end,
-	}, setting)	
-
 	local setting_obj = core_ui_manager:coreInjectSetting(parent:GetBase(), setting)
 
-	setting_obj._InjectIcon = nil
+	setting_obj._InjectBtn = nil
 
 	return setting_obj
 end)
@@ -3528,21 +4388,26 @@ ZYVIX:InjectElement("Notify", function(parent, setting)
 		
 		]],
 		Duration = 3,
+		ElementFillDirection = Enum.FillDirection.Vertical
 	}, setting)
 
-	local keybind_obj = core_ui_manager:coreNotify(parent:GetNotificationContainer(), setting)
+	local notify_obj = notification_manager:Notify(parent:GetNotificationContainer(), setting)
 
-	keybind_obj._CreateContainer = nil
-	keybind_obj._CreateContent = nil
-	keybind_obj._CreateBar = nil
+	return notify_obj
+end)
 
-	return keybind_obj
+ZYVIX:InjectElement("Instance", function(parent, setting)
+	setting = helper_functions:SetConfig({
+		Text = "This is a instance!",
+		ReadOnly = true,
+		AutoScroll = true,
+	}, setting)
+	
+	local instance_obj = core_ui_manager:coreCreateInstance(parent:GetBase(), setting)
+	
+	instance_obj._CreateInstance = nil
+	
+	return instance_obj
 end)
 
 return ZYVIX
-
---[[
-todo list
-
-after everything, try abusing inputs and identify bugs and flaws 
-]]
