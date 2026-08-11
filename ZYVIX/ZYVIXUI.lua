@@ -39,7 +39,7 @@ proxy = setmetatable({}, {
 	end,
 })
 
-local debugging = true
+local debugging = false
 
 local tween_service = proxy.TweenService
 local run_service = proxy.RunService
